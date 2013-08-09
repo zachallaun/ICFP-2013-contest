@@ -2,13 +2,16 @@
   (:require [midje.sweet :refer :all]
             [com.hackerschool.icfp-contest-2013.program-gen :refer :all]))
 
-;;TODO: we should test op and size together
-;; i.e.
-;; (def sizeop (juxt size op))
-;; (let [p '(if0 (if0 0 0 0) 0 0)]
-;;   (sizeop p) => [2 #{:if0}])
+(def sizeop (juxt size op))
+
+(def program-examples
+  [[0  1 #{}]
+   ['x 1 #{}]
+   ['(if0 0 0 0) 4 #{'if0}]
+   ['(if0 (if0 0 0 0) 0 0) 7 #{'if0}]
+   ['(someop 0) 2 #{'someop}]
+   ['(fold (op1 0) 1 (lambda (_ _) (op2 1 0))) 8 #{'fold 'op1 'op2}]])
+
 (facts "about op"
-  (op 0) => #{}
-  (op 'x) => #{}
-  (op '(if0 0 0 0)) => #{:if0}
-  (op '(if0 (if0 0 0 0) 0 0)) => #{:if0})
+  (doseq [[p size opset] program-examples]
+    (sizeop p) => [size opset]))
