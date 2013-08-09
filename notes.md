@@ -30,7 +30,7 @@ WARNING: most significant bits on the right
 ### `fold`
 
 ```clj
-#_(fold number init (lambda (x acc) expression))
+(fold number init (lambda (x acc) expression))
 
 (define shl8
   (lambda (n)
@@ -38,3 +38,7 @@ WARNING: most significant bits on the right
           n
           (lambda (_ acc) (shl1 acc)))))
 ```
+
+### 64 bit numbers
+
+All Clojure integer literals are java.lang.Longs, which are 64 bits _signed_. The spec wants unsigned numbers, so we may have to convert some of the outputs given by the server to their signed variants.
