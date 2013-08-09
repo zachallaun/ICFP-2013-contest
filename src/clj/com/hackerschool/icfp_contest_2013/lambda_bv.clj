@@ -76,9 +76,26 @@
       [(['lambda ([id] :seq) body] :seq)]
       (run-body body {id arg}))))
 
-;; TODO: actually write me.
-(defn bit-noto [n out]
-  (== n out))
+
+;; Something like this?
+(defn bit-noto [b out]
+  (conde
+   [(== b 1) (== 0 out)]
+   [(== b 0) (== 1 out)]))
+
+(run * [q] (bit-noto q 0))
+
+(defn bitvector-noto [bv out]
+  (conde
+   [(emptyo bv) (== '() out)]
+   [(fresh [fst rst]
+      (conso fst rst bv)
+      (fresh [flipb res]
+        (bit-noto fst flipb)
+        (conso flipb res out)
+        (bitvector-noto rst res)]))))
+
+
 
 
 (defn run-bodyo [e env out]
@@ -91,7 +108,7 @@
        (== (['not e1] :seq) e)
        (fresh [res]
          (run-bodyo e1 env res)
-         (bit-noto res out)))]
+         (bitvector-noto res out)))]
 
     ;; TODO: etc.
     ))
