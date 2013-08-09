@@ -11,7 +11,7 @@
 (defn icfp-get
   "Make a GET request to the contest server."
   [route]
-  (client/get (str icfp-url "/" route)
+  (http/get (str icfp-url "/" route)
               {:query-params {;;not sure why the contest organizers added this suffix.
                               :auth (str api-key "vpsH1H")}
                :as :json}))
