@@ -88,7 +88,7 @@
 (run 5 [q]
   (uniono [4 5 6] q [1 2 3 4 5 6]))
 
-;; I'm not sure what's going on here; is it diverging?
+;; oh shit, it gives me a freaking OOM error!
 (run 5 [q]
   (uniono q [1] []))
 
