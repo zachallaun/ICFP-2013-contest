@@ -2,3 +2,4 @@
 *.py[co]
 target/
 pom.xml
+.lein-repl-history
