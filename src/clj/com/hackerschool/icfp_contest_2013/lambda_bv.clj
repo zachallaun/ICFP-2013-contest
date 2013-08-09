@@ -1,5 +1,6 @@
 (ns com.hackerschool.icfp-contest-2013.lambda-bv
-  (:require [clojure.core.match :refer [match]]))
+  (:require [clojure.core.match :refer [match]]
+            [clojure.core.logic :refer :all]))
 
 ;; program    P ::= '(' 'lambda' '(' id ')' e ')'
 ;; expression e ::= '0' | '1' | id
@@ -74,6 +75,29 @@
       ;; Handle an entire program P
       [(['lambda ([id] :seq) body] :seq)]
       (run-body body {id arg}))))
+
+;; TODO: actually write me.
+(defn bit-noto [n out]
+  (== n out))
+
+
+(defn run-bodyo [e env out]
+  (conde
+    [(== e 0) (== 0 out)]
+    [(== e 1) (== 1 out)]
+
+    ;; unary
+    [(fresh [e1]
+       (== (['not e1] :seq) e)
+       (fresh [res]
+         (run-bodyo e1 env res)
+         (bit-noto res out)))]
+
+    ;; TODO: etc.
+    ))
+
+
+         
 
 
 
