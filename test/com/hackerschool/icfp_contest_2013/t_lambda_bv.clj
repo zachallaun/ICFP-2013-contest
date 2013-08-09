@@ -9,6 +9,10 @@
 
 (facts "about running λBV code"
 
+  (fact "invalid programs"
+    ;; too many arguments
+    (run '(lambda (x y) 1) 5) =not=> 5)
+
   (fact "can be a constant"
     (run '(lambda (x) 1) 123) => 1
     (run '(lambda (x) 0) 123) => 0)
