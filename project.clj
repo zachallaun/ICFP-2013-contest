@@ -5,6 +5,7 @@
                  [org.clojure/core.match "0.2.0-rc5"]]
 
   :profiles {:dev {:source-paths ["dev"]
+                   :plugins [[lein-midje "3.1.0"]]
                    :dependencies [[midje "1.5.1"]]}}
 
   :min-lein-version "2.0.0"
