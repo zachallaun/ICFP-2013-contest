@@ -24,22 +24,6 @@
 (defn removedo [x ls out]
   )
 
-(defn uniono [x y res]
-  (conde
-    [(emptyo y) (== x res)]
-    [(fresh [a d]
-       (conso a d y) ;a=3, d=()
-       (conde
-         [(membero a x) (uniono x d res)]
-         [(fresh [tmp1 tmp2]
-            (conso a x tmp1)
-            ;; remove a from x, storing the result in tmp2
-            (rembero a x tmp2)
-            ;;
-            (== x tmp2)
-            (uniono tmp1 d res))]
-         ))]))
-
 ;; for comparison's sake
 (defn not-member [elem ls]
   (cond
@@ -72,11 +56,48 @@
 (run 1 [q]
   (not-membero 'a ['a 'b 'c]))
 
+(defn uniono [x y out]
+  (conde
+   ;; if y is an empty set, then x is the union of x and y.
+    [(emptyo y) (== x out)]
+
+    ;; otherwise, y is a pair of a and d.
+    [(fresh [a d]
+       (conso a d y) ;a=3, d=()
+       (conde
+         ;; if a is a member of x, then we can "peel off" a,
+         ;; and take the union of x and d.
+         [(membero a x) (uniono x d out)]
+
+         ;; otherwise, we need to be sure to include a in the output.
+         [(not-membero a x)
+          (fresh [res]
+            (conso a res out)
+            (uniono x d res))]
+         ))]))
 
 (run 5 [q]
   (uniono [1 2 3] [3] q))
 
+(run 5 [q]
+  (uniono [1 2 3] [4 5 6] q))
+
+(run 5 [q]
+  (uniono [] [4 5 6] q))
+
+(run 5 [q]
+  (uniono [4 5 6] q [1 2 3 4 5 6]))
+
+;; I'm not sure what's going on here; is it diverging?
+(run 5 [q]
+  (uniono q [1] []))
+
 ((3 1 2 3) [1 2 3])
+
+
+
+
+
 
 
 (defn operatorso [p ops]
