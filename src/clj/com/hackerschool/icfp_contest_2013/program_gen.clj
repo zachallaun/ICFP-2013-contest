@@ -156,6 +156,10 @@
          (operatorso e1 res1)
          (uniono res0 res1 ops)))]))
 
+;; Trying to generate some expressions that have no operators
+(run 3 [q]
+  (operatorso q ()))
+
 (run 1 [q]
   (fresh [tmp]
     (appendo [1 2 3] [4 5 6] tmp)
