@@ -40,15 +40,37 @@
             (uniono tmp1 d res))]
          ))]))
 
-(defn not-membero [elem ls]
-  )
+;; for comparison's sake
+(defn not-member [elem ls]
+  (cond
+   (empty? ls) 't
+   (= (first ls) elem) 'f
+   :else (not-member elem (rest ls))))
 
-(defn not-ino [elem ls]
-  )
+;; a working relational not-membero.  succeeds if elem isn't a member of ls
+(defn not-membero [elem ls]
+  (conde
+   [(emptyo ls)] ;; just succeed if ls is empty
+   [(fresh [a d]
+      (conso a d ls)
+      (!= a elem)
+      (not-membero elem d))]))
+
 
 (run 1 [q]
-  (not-ino 1 [2 3]))
+  (not-membero 1 [2 3]))
 
+(run 1 [q]
+  (not-membero 'a ['b 'c]))
+
+(run 1 [q]
+  (not-membero 'a []))
+
+(run 1 [q]
+  (not-membero 'a ['a 'b 'a 'c]))
+
+(run 1 [q]
+  (not-membero 'a ['a 'b 'c]))
 
 
 (run 5 [q]
