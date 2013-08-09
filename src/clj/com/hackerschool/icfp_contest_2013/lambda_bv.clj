@@ -29,10 +29,12 @@
     (reduce f init bytes)))
 
 (defn run
-  "Runs a λBV sexp given an argument."
+  "Runs a λBV program, given a long argument, and returns a long."
   [e arg]
   {:pre  [(long? arg)]
    :post [long?]}
+
+  ;; Evaluate an expression.
   (letfn [(run-body [e env]
             (match [e]
               [(:or 0 1)] e
@@ -68,6 +70,8 @@
               ;;env lookup
               [(id :guard symbol?)] (env id)))]
     (match [e]
+
+      ;; Handle an entire program P
       [(['lambda ([id] :seq) body] :seq)]
       (run-body body {id arg}))))
 
