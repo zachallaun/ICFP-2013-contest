@@ -92,6 +92,10 @@
 (run 5 [q]
   (uniono q [1] []))
 
+;; oh shit, so does this!
+(run 5 [q]
+  (uniono q [1] [1 2 3]))
+
 ((3 1 2 3) [1 2 3])
 
 
