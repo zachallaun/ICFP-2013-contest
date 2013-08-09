@@ -1,0 +1,40 @@
+# ICFP 2013 contest: synthesis of bitvector programs
+
+## background reading:
+
+- [Dimensions of Program Synthesis](http://www.cis.upenn.edu/~alur/CIS673/gulwani10.pdf): An overview of the field
+- [Oracle-Guided Component-Based Program Synthesis](http://www.eecs.berkeley.edu/~sseshia/review/seshia-icse10.pdf): Explanation of a system for synthesizing bitvector and deobfuscation programs
+- [Synthesis of Loop-free Programs](http://research.microsoft.com/en-us/um/people/sumitg/pubs/pldi11-loopfree-synthesis.pdf): Similar to oracle-guided blah blah blah
+
+## notes:
+
+### less significant bits matter more than more significant bits (Oracle-guided p.6)
+
+Property 1 (See [28], Chapter 2). A function mapping bitvectors to
+bitvectors can be implemented with add, subtract, bitwise and, bitwise
+or, and bitwise not instructions if and only if each bit of the output
+depends only on bits at or less significant than that bit in each
+input operand.
+
+antitonicity! (this occurs to Lindsey, the jury is out whether this matters)
+
+WARNING: most significant bits on the right
+
+    interesting bit (instead of just depending on itself, it depends on previous bits)
+    v
+  0101000 (x)
++ 1100010 (f)
+---------
+  1011010
+
+### `fold`
+
+```clj
+#_(fold number init (lambda (x acc) expression))
+
+(define shl8
+  (lambda (n)
+    (fold 0x1122334455667788 ;; do this 8 times
+          n
+          (lambda (_ acc) (shl1 acc)))))
+```
