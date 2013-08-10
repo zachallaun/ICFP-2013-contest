@@ -34,7 +34,7 @@
 
 (comment
   (run 1 [q]
-       (not-membero 1 [2 3]))
+       (not-membero 1 [2 3]) (== q :yay))
 
   (run 1 [q]
        (not-membero 'a ['b 'c]))
@@ -78,11 +78,11 @@
   (run 5 [q]
        (uniono [] [4 5 6] q))
 
-  (run 5 [q]
+  (run 10 [q]
        (uniono [4 5 6] q [1 2 3 4 5 6]))
 
   ;; oh shit, it gives me a freaking OOM error!
-  (run 5 [q]
+  (run 1 [q]
        (uniono q [1] []))
 
   ;; oh shit, so does this!
@@ -97,7 +97,7 @@
   (conde
     [(== p 0) (== ops ())]
     [(== p 1) (== ops ())]
-    [(membero identifiers p) (== ops ())]
+    [(membero p identifiers) (== ops ())]
 
     ;; if
     [(fresh [e0 e1 e2]
@@ -149,6 +149,13 @@
   ;; Trying to generate some expressions that have no operators
   (run 3 [q]
        (operatorso q ()))
+
+  (run 4 [q]
+       (fresh [x y]
+         (operatorso x y)
+         (== q `(~x . ~y))))
+
+
 
   (run 1 [q]
        (fresh [tmp]
