@@ -4,14 +4,6 @@
             [clojure.core.match :refer [match]]
             [clojure.set :refer [union]]))
 
-;;                              Op 0 = {}
-;;                              Op 1 = {}
-;;                              Op x = {}
-;;                 Op (if0 e0 e1 e2) = {"if0"}  U Op e0 U Op e1 U Op e2
-;; Op (fold e0 e1 (lambda (x y) e2)) = {"fold"} U Op e0 U Op e1 U Op e2
-;;                        Op (op1 e) = {op1}    U Op e0
-;;                    Op (op2 e0 e1) = {op2}    U Op e0 U Op e1
-
 ;; we only ever need 3 identifiers maximum in a lambda-bv program
 (def identifiers ['x 'y 'z])
 
@@ -165,7 +157,18 @@
 ;; ((1 2 3 4 5 6 7 8 9))
 
 
-(defn op [p]
+(defn op
+  "A set of the operators in the provided list expression, via the contest rules:
+
+                             Op 0 = {}
+                             Op 1 = {}
+                             Op x = {}
+                Op (if0 e0 e1 e2) = {'if0'}  U Op e0 U Op e1 U Op e2
+Op (fold e0 e1 (lambda (x y) e2)) = {'fold'} U Op e0 U Op e1 U Op e2
+                       Op (op1 e) = {op1}    U Op e0
+                   Op (op2 e0 e1) = {op2}    U Op e0 U Op e1
+"
+  [p]
   (match [p]
     [(:or 0 1)] #{}
     [(_ :guard symbol?)] #{}
@@ -174,16 +177,20 @@
     [([op1 e] :seq)] (union #{op1} (op e))
     [([op2 e0 e1] :seq)] (union #{op2} (op e0) (op e1))))
 
-;;                              |0| = 1
-;;                              |1| = 1
-;;                              |x| = 1
-;;                 |(if0 e0 e1 e2)| = 1 + |e0| + |e1| + |e2|
-;; |(fold e0 e1 (lambda (x y) e2))| = 2 + |e0| + |e1| + |e2|
-;;                       |(op1 e0)| = 1 + |e0|
-;;                    |(op2 e0 e1)| = 1 + |e0| + |e1|
-;;                 |(lambda (x) e)| = 1 + |e|
 
-(defn size [p]
+(defn size
+  "The size of the provided list expression, via the contest rules:
+
+                              |0| = 1
+                              |1| = 1
+                              |x| = 1
+                 |(if0 e0 e1 e2)| = 1 + |e0| + |e1| + |e2|
+ |(fold e0 e1 (lambda (x y) e2))| = 2 + |e0| + |e1| + |e2|
+                       |(op1 e0)| = 1 + |e0|
+                    |(op2 e0 e1)| = 1 + |e0| + |e1|
+                 |(lambda (x) e)| = 1 + |e|
+"
+  [p]
   (match [p]
     [(:or 0 1)] 1
     [(_ :guard symbol?)] 1
