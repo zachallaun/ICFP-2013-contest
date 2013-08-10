@@ -28,7 +28,7 @@
   (conde
    [(emptyo ls)] ;; just succeed if ls is empty
    [(fresh [a d]
-      (conso a d ls)
+      (conso a d ls) ;; unify (a d) with ls  
       (!= a elem)
       (not-membero elem d))]))
 
@@ -46,8 +46,14 @@
        (not-membero 'a ['a 'b 'a 'c]))
 
   (run 1 [q]
-       (not-membero 'a ['a 'b 'c])))
+       (not-membero 'a ['a 'b 'c]))
 
+  (run 3 [q]
+       (not-membero 'a q))
+
+  (run 2 [q]
+       (not-membero q ['b 'c]))
+  )
 
 (defn uniono [x y out]
   (conde
@@ -69,6 +75,8 @@
             (uniono x d res))]
          ))]))
 (comment
+
+  ;; A few tests that seem to work:
   (run 5 [q]
        (uniono [1 2 3] [3] q))
 
@@ -89,7 +97,9 @@
   (run 5 [q]
        (uniono q [1] [1 2 3]))
 
-  ((3 1 2 3) [1 2 3]))
+  ((3 1 2 3) [1 2 3])
+
+  )
 
 
 
@@ -100,6 +110,8 @@
     [(membero p identifiers) (== ops ())]
 
     ;; if
+
+
     [(fresh [e0 e1 e2]
        (== p ['if0 e0 e1 e2])
        (fresh [res0 res1 res2]
@@ -110,57 +122,71 @@
            (uniono res0 res1 tmp)
            (uniono res2 tmp ops))))]
 
-    ;; fold
-    [(fresh [e0 e1 e2 id]
-       (== p ['fold e0 e1 (['lambda (id) e2] :seq)] :seq)
-       (fresh [res0 res1 res2]
-         (operatorso e0 res0)
-         (operatorso e1 res1)
-         (operatorso e2 res2)
-         (fresh [tmp]
-           (uniono res0 res1 tmp)
-           (uniono res2 tmp ops))))]
+    ;; ;; fold
+    ;; [(fresh [e0 e1 e2 id]
+    ;;    (== p ['fold e0 e1 (['lambda (id) e2] :seq)] :seq)
+    ;;    (fresh [res0 res1 res2]
+    ;;      (operatorso e0 res0)
+    ;;      (operatorso e1 res1)
+    ;;      (operatorso e2 res2)
+    ;;      (fresh [tmp]
+    ;;        (uniono res0 res1 tmp)
+    ;;        (uniono res2 tmp ops))))]
 
-    ;; unary ops
-    [(fresh [op e0]
-       (== p [op e0])
-       (conde
-        [(== op 'not)]
-        [(== op 'shl1)]
-        [(== op 'shr1)]
-        [(== op 'shr4)]
-        [(== op 'shr16)])
-       (operatorso e0 ops))]
+    ;; ;; unary ops
+    ;; [(fresh [op e0]
+    ;;    (== p [op e0])
+    ;;    (conde
+    ;;     [(== op 'not)]
+    ;;     [(== op 'shl1)]
+    ;;     [(== op 'shr1)]
+    ;;     [(== op 'shr4)]
+    ;;     [(== op 'shr16)])
+    ;;    (operatorso e0 ops))]
 
-    ;; binary ops
-    [(fresh [op e0 e1]
-       (== p [op e0 e1])
-       (conde
-        [(== op 'and)]
-        [(== op 'or)]
-        [(== op 'xor)]
-        [(== op 'plus)])
-       (fresh [res0 res1]
-         (operatorso e0 res0)
-         (operatorso e1 res1)
-         (uniono res0 res1 ops)))]))
+    ;; ;; binary ops
+    ;; [(fresh [op e0 e1]
+    ;;    (== p [op e0 e1])
+    ;;    (conde
+    ;;     [(== op 'and)]
+    ;;     [(== op 'or)]
+    ;;     [(== op 'xor)]
+    ;;     [(== op 'plus)])
+    ;;    (fresh [res0 res1]
+    ;;      (operatorso e0 res0)
+    ;;      (operatorso e1 res1)
+    ;;      (uniono res0 res1 ops)))]
+))
 
 (comment
-  ;; Trying to generate some expressions that have no operators
-  (run 3 [q]
-       (operatorso q ()))
+  (run 4 [q]
+       (membero q '[a b c]))
 
   (run 4 [q]
+       (membero 'a q))
+
+  (run 4 [q]
+       (fresh [v]
+              (membero q `[~v a])))
+
+  ;; Trying to generate some expressions that have no operators
+  (run 10 [q]
+       (operatorso q ()))
+
+  (run 10 [q]
        (fresh [x y]
          (operatorso x y)
-         (== q `(~x . ~y))))
+         (conso x y q)))
 
-
+  (run 5 [q]
+       (operatorso q ['plus]))
 
   (run 1 [q]
        (fresh [tmp]
               (appendo [1 2 3] [4 5 6] tmp)
-              (appendo tmp [7 8 9] q))))
+              (appendo tmp [7 8 9] q)))
+
+)
 ;; ((1 2 3 4 5 6 7 8 9))
 
 

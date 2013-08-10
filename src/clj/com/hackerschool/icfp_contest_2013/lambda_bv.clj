@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [==])
   (:require [clojure.core.match :refer [match]]
             [clojure.core.logic :refer :all
-             :exclude [run]]))
+             ]))
 
 ;; program    P ::= '(' 'lambda' '(' id ')' e ')'
 ;; expression e ::= '0' | '1' | id
@@ -31,7 +31,8 @@
   (let [bytes (reverse (long->bytes n))]
     (reduce f init bytes)))
 
-(defn run
+;; fixme: rename me.
+(defn runf
   "Runs a λBV program, given a long argument, and returns a long."
   [e arg]
   {:pre  [(long? arg)]
@@ -85,6 +86,18 @@
    [(== b 1) (== 0 out)]
    [(== b 0) (== 1 out)]))
 
+(run 1 [q]
+  (bit-noto 0 q))
+
+(run 2 [q]
+  (bit-noto q 0))
+
+(run* [q]
+  (fresh [u v]
+    (bit-noto u v)
+    (conso u v q)))
+
+
 (defn bitvector-noto [bv out]
   (conde
    [(emptyo bv) (== '() out)]
@@ -95,7 +108,8 @@
         (conso flipb res out)
         (bitvector-noto rst res)))]))
 
-
+;; todo: "shl1" | "shr1" | "shr4" | "shr16"
+;; todo: "and" | "or" | "xor" | "plus"
 
 
 (defn run-bodyo [e env out]
