@@ -86,16 +86,18 @@
    [(== b 1) (== 0 out)]
    [(== b 0) (== 1 out)]))
 
-(run 1 [q]
-  (bit-noto 0 q))
+(comment
+  (run 1 [q]
+       (bit-noto 0 q))
 
-(run 2 [q]
-  (bit-noto q 0))
+  (run 2 [q]
+       (bit-noto q 0))
 
-(run* [q]
-  (fresh [u v]
-    (bit-noto u v)
-    (conso u v q)))
+  (run* [q]
+    (fresh [u v]
+      (bit-noto u v)
+      (conso u v q)))
+  )
 
 
 (defn bitvector-noto [bv out]
