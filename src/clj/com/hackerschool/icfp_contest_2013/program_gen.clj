@@ -40,21 +40,22 @@
       (!= a elem)
       (not-membero elem d))]))
 
+(comment
+  (run 1 [q]
+       (not-membero 1 [2 3]))
 
-(run 1 [q]
-  (not-membero 1 [2 3]))
+  (run 1 [q]
+       (not-membero 'a ['b 'c]))
 
-(run 1 [q]
-  (not-membero 'a ['b 'c]))
+  (run 1 [q]
+       (not-membero 'a []))
 
-(run 1 [q]
-  (not-membero 'a []))
+  (run 1 [q]
+       (not-membero 'a ['a 'b 'a 'c]))
 
-(run 1 [q]
-  (not-membero 'a ['a 'b 'a 'c]))
+  (run 1 [q]
+       (not-membero 'a ['a 'b 'c])))
 
-(run 1 [q]
-  (not-membero 'a ['a 'b 'c]))
 
 (defn uniono [x y out]
   (conde
@@ -75,32 +76,28 @@
             (conso a res out)
             (uniono x d res))]
          ))]))
+(comment
+  (run 5 [q]
+       (uniono [1 2 3] [3] q))
 
-(run 5 [q]
-  (uniono [1 2 3] [3] q))
+  (run 5 [q]
+       (uniono [1 2 3] [4 5 6] q))
 
-(run 5 [q]
-  (uniono [1 2 3] [4 5 6] q))
+  (run 5 [q]
+       (uniono [] [4 5 6] q))
 
-(run 5 [q]
-  (uniono [] [4 5 6] q))
+  (run 5 [q]
+       (uniono [4 5 6] q [1 2 3 4 5 6]))
 
-(run 5 [q]
-  (uniono [4 5 6] q [1 2 3 4 5 6]))
+  ;; oh shit, it gives me a freaking OOM error!
+  (run 5 [q]
+       (uniono q [1] []))
 
-;; oh shit, it gives me a freaking OOM error!
-(run 5 [q]
-  (uniono q [1] []))
+  ;; oh shit, so does this!
+  (run 5 [q]
+       (uniono q [1] [1 2 3]))
 
-;; oh shit, so does this!
-(run 5 [q]
-  (uniono q [1] [1 2 3]))
-
-((3 1 2 3) [1 2 3])
-
-
-
-
+  ((3 1 2 3) [1 2 3]))
 
 
 
@@ -156,14 +153,15 @@
          (operatorso e1 res1)
          (uniono res0 res1 ops)))]))
 
-;; Trying to generate some expressions that have no operators
-(run 3 [q]
-  (operatorso q ()))
+(comment
+  ;; Trying to generate some expressions that have no operators
+  (run 3 [q]
+       (operatorso q ()))
 
-(run 1 [q]
-  (fresh [tmp]
-    (appendo [1 2 3] [4 5 6] tmp)
-    (appendo tmp [7 8 9] q)))
+  (run 1 [q]
+       (fresh [tmp]
+              (appendo [1 2 3] [4 5 6] tmp)
+              (appendo tmp [7 8 9] q))))
 ;; ((1 2 3 4 5 6 7 8 9))
 
 

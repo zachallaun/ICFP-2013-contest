@@ -1,6 +1,8 @@
 (ns com.hackerschool.icfp-contest-2013.lambda-bv
+  (:refer-clojure :exclude [==])
   (:require [clojure.core.match :refer [match]]
-            [clojure.core.logic :refer :all]))
+            [clojure.core.logic :refer :all
+             :exclude [run]]))
 
 ;; program    P ::= '(' 'lambda' '(' id ')' e ')'
 ;; expression e ::= '0' | '1' | id
@@ -83,8 +85,6 @@
    [(== b 1) (== 0 out)]
    [(== b 0) (== 1 out)]))
 
-(run * [q] (bit-noto q 0))
-
 (defn bitvector-noto [bv out]
   (conde
    [(emptyo bv) (== '() out)]
@@ -93,7 +93,7 @@
       (fresh [flipb res]
         (bit-noto fst flipb)
         (conso flipb res out)
-        (bitvector-noto rst res)]))))
+        (bitvector-noto rst res)))]))
 
 
 
