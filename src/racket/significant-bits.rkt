@@ -1,7 +1,10 @@
 #lang racket
 
+(define (hex expr)
+  (~r expr #:base 16 #:min-width 16 #:pad-string "0"))
+
 (define (driver expr)
-  (~r (sb* expr) #:base 16 #:min-width 16 #:pad-string "0"))
+  (hex (sb* expr)))
 
 (define *all-fs* #xFFFFFFFFFFFFFFFF)
 
@@ -14,20 +17,22 @@
                     (set! bits (bitwise-and
                                 bits
                                 (shift
-                                 *all-fs* (- 0 rp)))))))
+                                 *all-fs* rp))))))
          (shr (lambda (steps)
                 (set! rp (+ rp steps))
                 (when (> rp 0)
                     (set! bits (bitwise-and
                                 bits
-                                (shift)
-                                 *all-fs* rp)))))]
+                                (shift
+                                 *all-fs* rp))))))]
     (define (loop expr)
       (match expr
+        [`(fold ,_ ,_) bits]
         [`(lambda (,_) ,body)
          (loop body)]
         [`(not ,e)
-         (loop e)]
+         (loop e)
+         bits]
         [`(shl1 ,e)
          (loop e)
          (shl 1)
@@ -46,18 +51,28 @@
          bits]
         [(or `(and ,(? integer? const) ,e)
              `(and ,e ,(? integer? const)))
-         (when (and (>= rp 0) (not const))
-             (set! bits (bitwise-and bits (bitwise-not (shift 1 (- 0 rp))))))
-         (loop e)]
+         (loop e)
+         (when (and (>= rp 0) (= const 0))
+             (set! bits (bitwise-and bits (bitwise-and *all-fs*
+                                          (bitwise-not (shift 1 rp))))))
+         bits]
         [(or `(or ,(? integer? const) ,e)
              `(or ,e ,(? integer? const)))
-         (when (and (>= rp 0) const)
-             (set! bits (bitwise-and bits (bitwise-not (shift 1 (- 0 rp))))))
-         (loop e)]
+         (loop e)
+         (when (and (>= rp 0) (= const 1))
+             (set! bits (bitwise-and bits (bitwise-and *all-fs* 
+                                          (bitwise-not (shift 1 rp))))))
+         bits]
+        [(or `(,_ ,(? integer?) ,e)
+             `(,_ ,e ,(? integer?)))
+         (loop e)
+         bits]
+         
         [`(,_ ,e1 ,e2) ;; any binary op
-         (bitwise-ior
+         (set! bits (bitwise-ior
           (sb* e1)
-          (sb* e2))]
+          (sb* e2)))
+          bits]
         [(? symbol?) bits]
         [(? integer?) bits]))
     (loop expr)))
