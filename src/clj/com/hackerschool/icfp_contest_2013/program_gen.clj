@@ -110,8 +110,6 @@
     [(membero p identifiers) (== ops ())]
 
     ;; if
-
-
     [(fresh [e0 e1 e2]
        (== p ['if0 e0 e1 e2])
        (fresh [res0 res1 res2]
@@ -122,40 +120,45 @@
            (uniono res0 res1 tmp)
            (uniono res2 tmp ops))))]
 
-    ;; ;; fold
-    ;; [(fresh [e0 e1 e2 id]
-    ;;    (== p ['fold e0 e1 (['lambda (id) e2] :seq)] :seq)
-    ;;    (fresh [res0 res1 res2]
-    ;;      (operatorso e0 res0)
-    ;;      (operatorso e1 res1)
-    ;;      (operatorso e2 res2)
-    ;;      (fresh [tmp]
-    ;;        (uniono res0 res1 tmp)
-    ;;        (uniono res2 tmp ops))))]
+    ;; fold
+    [(fresh [e0 e1 e2 id]
+       (== p ['fold e0 e1 (['lambda (id) e2])])
+       (fresh [res0 res1 res2]
+         (operatorso e0 res0)
+         (operatorso e1 res1)
+         (operatorso e2 res2)
+         (fresh [tmp]
+           (uniono res0 res1 tmp)
+           (uniono res2 tmp ops))))]
 
-    ;; ;; unary ops
-    ;; [(fresh [op e0]
-    ;;    (== p [op e0])
-    ;;    (conde
-    ;;     [(== op 'not)]
-    ;;     [(== op 'shl1)]
-    ;;     [(== op 'shr1)]
-    ;;     [(== op 'shr4)]
-    ;;     [(== op 'shr16)])
-    ;;    (operatorso e0 ops))]
+    ;; unary ops
+    [(fresh [op e0 res]
+       (== p [op e0])
+       (conde
+        [(== op 'not)]
+        [(== op 'shl1)]
+        [(== op 'shr1)]
+        [(== op 'shr4)]
+        [(== op 'shr16)])
+       (operatorso e0 ops)
+       ;; TODO: don't know if this syntax for listifying op is OK
+       (uniono `(~op) ops)]
 
-    ;; ;; binary ops
-    ;; [(fresh [op e0 e1]
-    ;;    (== p [op e0 e1])
-    ;;    (conde
-    ;;     [(== op 'and)]
-    ;;     [(== op 'or)]
-    ;;     [(== op 'xor)]
-    ;;     [(== op 'plus)])
-    ;;    (fresh [res0 res1]
-    ;;      (operatorso e0 res0)
-    ;;      (operatorso e1 res1)
-    ;;      (uniono res0 res1 ops)))]
+    ;; binary ops
+    [(fresh [op e0 e1]
+       (== p [op e0 e1])
+       (conde
+        [(== op 'and)]
+        [(== op 'or)]
+        [(== op 'xor)]
+        [(== op 'plus)])
+       (fresh [res0 res1 res2 ]
+         (operatorso e0 res0)
+         (operatorso e1 res1)
+         ;; make sure that op is part of ops
+         (uniono res0 res1 res2)
+         ;; am I allowed to turn op into a list this way?
+         (uniono res2 `(~op) ops)))]
 ))
 
 (comment
@@ -173,13 +176,15 @@
   (run 10 [q]
        (operatorso q ()))
 
-  (run 10 [q]
+  (run 30 [q]
        (fresh [x y]
          (operatorso x y)
-         (conso x y q)))
+         (conso x y q))) ;; unifies q with (x y) pairs,
+                         ;; which will just look like (x) if y is ()
 
+  ;; todo: this is busted and I don't know why!
   (run 5 [q]
-       (operatorso q ['plus]))
+       (operatorso q '(plus)))
 
   (run 1 [q]
        (fresh [tmp]
