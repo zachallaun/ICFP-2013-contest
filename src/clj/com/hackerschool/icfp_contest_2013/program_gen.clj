@@ -142,7 +142,7 @@
         [(== op 'shr16)])
        (operatorso e0 ops)
        ;; TODO: don't know if this syntax for listifying op is OK
-       (uniono `(~op) ops)]
+       (uniono `(~op) ops))]
 
     ;; binary ops
     [(fresh [op e0 e1]
