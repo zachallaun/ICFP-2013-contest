@@ -32,7 +32,7 @@
     (reduce f init bytes)))
 
 ;; fixme: rename me.
-(defn runf
+(defn run-program
   "Runs a λBV program, given a long argument, and returns a long."
   [e arg]
   {:pre  [(long? arg)]
