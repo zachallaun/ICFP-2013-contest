@@ -11,14 +11,14 @@
   [operator expressions]
   (case operator
     (shl1 shr1 shr4 shr16 not)  (for [expr expressions]
-                                  `(~operator ~expr))
+                                  [operator expr])
     (and or xor)                (for [expr1 expressions
                                       expr2 expressions]
-                                  `(~operator ~expr1 ~expr2))
+                                  [operator expr1 expr2])
     (if0)                       (for [expr1 expressions
                                       expr2 expressions
                                       expr3 expressions]
-                                  `(if ~expr1 ~expr2 ~expr3))))
+                                  ['if0 expr1 expr2 expr3])))
 
 (defn generate-expressions'
   "Generate all expressions as above; accumulate in expressions."
@@ -43,10 +43,10 @@
   "Generate all programs with a specified size and operator set."
   [size operators]
   (map (fn [expr]
-         `(lambda (x) ~expr))
+         ['lambda ['x] expr])
        (generate-expressions size operators)))
 
 (comment
-  (take 10 (generate-programs 3 all-operators))
-  (take 1000 (generate-programs 10 '[and if0 shr4 xor]))
+  (generate-programs 1 '[and shl1 shr4 xor or])
+  (take 50 (generate-programs 10 '[and if0 shr4 xor]))
 )
