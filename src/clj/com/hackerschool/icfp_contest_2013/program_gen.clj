@@ -131,38 +131,11 @@
          (uniono res2 [op] ops)))]))
 
 (comment
-  (run 4 [q]
-    (membero q '[a b c]))
-
-  (run 4 [q]
-    (membero 'a q))
-
-  (run 4 [q]
-    (fresh [v]
-      (membero q [v 'a])))
-
-  ;; Trying to generate some expressions that have no operators
-  (run 1 [q]
-    (operatorso q ['if0]))
-
-
-  (run 30 [q]
-    (fresh [x y]
-      (operatorso x y)
-      (conso x y q))) ;; unifies q with (x y) pairs,
-  ;; which will just look like (x) if y is ()
-
-  ;; todo: this is busted and I don't know why!
-  (run 5 [q]
-    (operatorso q ['plus]))
-
-  (run 1 [q]
-    (fresh [tmp]
-      (appendo [1 2 3] [4 5 6] tmp)
-      (appendo tmp [7 8 9] q)))
-
+  ;; example: generate 10 expressions containing plus and xor
+  (run 10 [q]
+    (operatorso q ['plus 'xor]))
   )
-;; ((1 2 3 4 5 6 7 8 9))
+
 
 
 (defn op

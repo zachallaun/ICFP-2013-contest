@@ -1,7 +1,7 @@
 (ns com.hackerschool.icfp-contest-2013.t-program-gen
   (:require [midje.sweet :refer :all]
             [com.hackerschool.icfp-contest-2013.program-gen :refer :all]
-            [clojure.core.logic :refer [run]]))
+            [clojure.core.logic :refer [run membero appendo fresh]]))
 
 (def program-examples
   "Vector of known valid [program size opset] triples."
@@ -18,6 +18,23 @@
 (facts "Size and operator set of example programs are calculated correctly by `size` and `op`."
   (doseq [[p size opset] program-examples]
     (sizeop p) => [size opset]))
+
+(facts "about assorted core.logic relations"
+  (run 4 [q] (membero q '[a b c])) => '(a b c)
+
+  ;; Don't know why this fails! -- LK
+  ;; (run 4 [q] (membero 'a q)) =>
+  ;; '((a . _0) (_0 a . _1) (_0 _1 a . _2) (_0 _1 _2 a . _3))
+
+  (run 4 [q]
+    (fresh [v]
+      (membero q [v 'a]))) => '(_0 a)
+
+  (run 1 [q]
+    (fresh [tmp]
+      (appendo [1 2 3] [4 5 6] tmp)
+      (appendo tmp [7 8 9] q))) => '((1 2 3 4 5 6 7 8 9))
+)
 
 (facts "about `uniono`"
   (run 5 [q] (uniono [1 2 3] [3] q)) => '([1 2 3])
