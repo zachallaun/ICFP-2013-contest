@@ -5,6 +5,28 @@
 
 ;;TODO: memoize fns for speed.
 
+(defn size
+  "The size of the provided list expression, via the contest rules:
+
+                              |0| = 1
+                              |1| = 1
+                              |x| = 1
+                 |(if0 e0 e1 e2)| = 1 + |e0| + |e1| + |e2|
+ |(fold e0 e1 (lambda (x y) e2))| = 2 + |e0| + |e1| + |e2|
+                       |(op1 e0)| = 1 + |e0|
+                    |(op2 e0 e1)| = 1 + |e0| + |e1|
+                 |(lambda (x) e)| = 1 + |e|
+"
+  [p]
+  (match [p]
+    [['lambda _ e]] (+ 1 (size e))
+    [(:or 0 1)] 1
+    [(_ :guard symbol?)] 1
+    [['if0 e0 e1 e2]] (+ 1 (size e0) (size e1) (size e2))
+    [['fold e0 e1 ['lambda _ e2]]] (+ 2 (size e0) (size e1) (size e2))
+    [[op1 e]] (+ 1 (size e))
+    [[op2 e0 e1]] (+ 1 (size e0) (size e1))))
+
 (def all-operators
   "Every operator in the λBV language."
   '[not shl1 shr1 shr4 shr16
@@ -39,32 +61,36 @@
 
 (defn generate-expressions'
   "Generate all expressions as above; accumulate in expressions."
-  [size operators expressions]
-  (if (= size 0)
+  [opsize depth operators expressions]
+  (if (= depth 0)
     expressions
     (let [new-expressions
           (mapcat (fn [op]
                     (generate-expressions-with op expressions))
                   operators)]
       (generate-expressions'
-       (dec size)
+       opsize
+       (dec depth)
        operators
-       (concat new-expressions expressions)))))
+       (concat (filter #(>= opsize (size %))
+                       new-expressions)
+               expressions)))))
 
 (defn generate-expressions
-  "Generate all expressions with a specified size and operator set."
-  [size operators]
-  (generate-expressions' size operators '[0 1 x]))
+  "Generate all expressions with a specified depth and operator set."
+  [opsize depth operators]
+  (generate-expressions' opsize depth operators '[0 1 x]))
 
 (defn generate-programs
-  "Generate all programs with a specified size and operator set."
-  [size operators]
+  "Generate all programs with a specified depth and operator set."
+  [opsize depth operators]
   (map (fn [expr]
          ['lambda ['x] expr])
-       (generate-expressions size operators)))
+       (generate-expressions opsize depth operators)))
 
 (comment
-  (generate-programs 2 '[and])
+  (generate-programs 3 3 '[shl1])
+
 
   (take 5 (generate-programs 10 '[and if0 shr4 xor]))
 
@@ -154,25 +180,3 @@
 
 
   )
-
-(defn size
-  "The size of the provided list expression, via the contest rules:
-
-                              |0| = 1
-                              |1| = 1
-                              |x| = 1
-                 |(if0 e0 e1 e2)| = 1 + |e0| + |e1| + |e2|
- |(fold e0 e1 (lambda (x y) e2))| = 2 + |e0| + |e1| + |e2|
-                       |(op1 e0)| = 1 + |e0|
-                    |(op2 e0 e1)| = 1 + |e0| + |e1|
-                 |(lambda (x) e)| = 1 + |e|
-"
-  [p]
-  (match [p]
-    [['lambda _ e]] (+ 1 (size e))
-    [(:or 0 1)] 1
-    [(_ :guard symbol?)] 1
-    [['if0 e0 e1 e2]] (+ 1 (size e0) (size e1) (size e2))
-    [['fold e0 e1 ['lambda _ e2]]] (+ 2 (size e0) (size e1) (size e2))
-    [[op1 e]] (+ 1 (size e))
-    [[op2 e0 e1]] (+ 1 (size e0) (size e1))))

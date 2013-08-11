@@ -115,46 +115,62 @@
 ;;                      (recur (oracle :examples) culled)))
 
 (def size->stupid-size
-  {3 1, 4 2, 5 3})
+  {3 1, 4 2, 5 3, 6 4})
 
 (defn do-problem
   "Given a problem from the icfp site, generate all possible solutions
    and try to find a solution using the icfp-oracle. Does all the things."
   [{:keys [id operators size]}]
-  (find-solution (generate-programs (size->stupid-size size) operators)
+  (find-solution (generate-programs size (size->stupid-size size) operators)
                  (icfp-oracle id)))
 
-(comment
+(defn solvable?
+  [problem]
+  (not (contains? problem :solved)))
 
-  (def unsolved? (complement :solved))
+(defn size-n-problems
+  [problems n]
+  (filter #(= (:size %) n) problems))
 
-  (def problems
-    (->> (:body (myproblems-req))
-         (map (fn [problem]
-                (update-in problem [:operators] #(map symbol %))))
-         (filter (fn [{:keys [operators]}]
-                   (not (let [in-ops (set operators)]
-                          (or (in-ops 'fold)
-                              (in-ops 'tfold))))))
-         (filter unsolved?)
-         )) ;; we don't handle fold/tfold yet
+(defn win! []
+  (sh "/usr/bin/say" "-v" "Good News" "win"))
 
-  (defn size-n-problems
-    [n]
-    (filter #(= (:size %) n) problems))
+(defn do-size-n-problems [problems n]
+  (doseq [problem (size-n-problems problems 6)]
+    (println (str "WORKING ON: " problem))
+    (when-let [res (do-problem problem)]
+      (println (str "RESULT: " res))
+      (win!))))
 
-  (def size-3-problems
-    (filter #(= (:size %) 3) problems))
-  (count size-3-problems)
+  (comment
 
-  (doseq [problem size-3-problems]
-    (println (str "RESULT: " (do-problem problem))))
+    (def problems
+      (->> (:body (myproblems-req))
+           (map (fn [problem]
+                  (update-in problem [:operators] #(map symbol %))))
+           (filter (fn [{:keys [operators]}]
+                     (not (let [in-ops (set operators)]
+                            (or (in-ops 'fold)
+                                (in-ops 'tfold)))))) ;; we don't handle fold/tfold yet
+           (filter solvable?)))
 
-  (take 2 )
+    (def size-3-problems
+      (filter #(= (:size %) 3) problems))
+    (count size-3-problems)
 
-  ({:id "6QaBeiw9UA5f0Zkgc5fZQNOt", :size 3, :operators (shr1)} {:id "6RX515PBdDpEkRPGTjTTg6dU", :size 3, :operators (shr16)})
 
 
-  (sh "open spotify:track:0k1xMUwn9sb7bZiqdT9ygx")
+    (doseq [problem (size-n-problems 6)]
+      (when-let [res (do-problem problem)]
+        (println (str "RESULT: " res))
+        (win!)))
 
-  )
+    (take 2 )
+
+    ({:id "6QaBeiw9UA5f0Zkgc5fZQNOt", :size 3, :operators (shr1)} {:id "6RX515PBdDpEkRPGTjTTg6dU", :size 3, :operators (shr16)})
+
+
+
+    (sh "open spotify:track:0k1xMUwn9sb7bZiqdT9ygx")
+
+    )
