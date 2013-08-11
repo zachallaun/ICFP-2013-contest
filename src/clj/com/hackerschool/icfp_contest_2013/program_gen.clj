@@ -32,29 +32,6 @@
       (!= a elem)
       (not-membero elem d))]))
 
-(comment
-  (run 1 [q]
-    (not-membero 1 [2 3]) (== q :yay))
-
-  (run 1 [q]
-    (not-membero 'a ['b 'c]))
-
-  (run 1 [q]
-    (not-membero 'a []))
-
-  (run 1 [q]
-    (not-membero 'a ['a 'b 'a 'c]))
-
-  (run 1 [q]
-    (not-membero 'a ['a 'b 'c]))
-
-  (run 3 [q]
-    (not-membero 'a q))
-
-  (run 2 [q]
-    (not-membero q ['b 'c]))
-  )
-
 (defn uniono [x y out]
   (conde
     ;; if y is an empty set, then x is the union of x and y.
@@ -78,11 +55,9 @@
             (uniono x d res))]))]))
 
 (comment
-
-  ;; oh shit, so does this!
+  ;; diverges, apparently :(
   (run 3 [q]
     (uniono q [1] [1 2 3]))
-  
 
   )
 

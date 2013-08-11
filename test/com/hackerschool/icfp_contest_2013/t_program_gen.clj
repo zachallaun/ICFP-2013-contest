@@ -27,6 +27,16 @@
   (run 5 [q] (uniono [1 2 3] [3] q)) => '([1 2 3])
   (run 1 [q] (uniono q [1] [])) => '())
 
+(facts "about `not-membero`"
+  (run 1 [q] (not-membero 1 [2 3])) => '(_0)
+  (run 1 [q] (not-membero 'a ['b 'c])) => '(_0)
+  (run 1 [q] (not-membero 'a [])) => '(_0)
+  (run 1 [q] (not-membero 'a ['a 'b 'a 'c])) => '()
+  (run 1 [q] (not-membero 'a ['a 'b 'c])) => '()
+  (run 3 [q] (not-membero 'a q)) => '(() ((_0) :- (!= (_0 a))) ((_0 _1) :- (!= (_1 a)) (!= (_0 a))))
+  (run 2 [q] (not-membero q ['b 'c])) => '((_0 :- (!= (_0 c)) (!= (_0 b))))
+)
+
 (facts "about `operatorso`"
   (fact "the only programs w/o operators are 0 1 x y z"
     (let [programs (run 10 [q] (operatorso q ()))]
