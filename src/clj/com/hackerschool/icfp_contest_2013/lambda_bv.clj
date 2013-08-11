@@ -41,28 +41,29 @@
   (letfn [(run-body [e env]
             (match [e]
               [(:or 0 1)] e
-
+                
               ;;unary
-              [(['not e1] :seq)]   (bit-not (run-body e1 env))
-              [(['shl1 e1] :seq)]  (bit-shift-left (run-body e1 env) 1)
-              [(['shr1 e1] :seq)]  (bit-shift-right (run-body e1 env) 1)
-              [(['shr4 e1] :seq)]  (bit-shift-right (run-body e1 env) 4)
-              [(['shr16 e1] :seq)] (bit-shift-right (run-body e1 env) 16)
+              [['not e1]]   (bit-not (run-body e1 env))
+
+              [['shl1 e1]]  (bit-shift-left (run-body e1 env) 1)
+              [['shr1 e1]]  (bit-shift-right (run-body e1 env) 1)
+              [['shr4 e1]]  (bit-shift-right (run-body e1 env) 4)
+              [['shr16 e1]] (bit-shift-right (run-body e1 env) 16)
 
               ;;binary
-              [(['and e1 e2] :seq)] (bit-and (run-body e1 env) (run-body e2 env))
-              [(['or e1 e2] :seq)]  (bit-or (run-body e1 env) (run-body e2 env))
-              [(['xor e1 e2] :seq)] (bit-xor (run-body e1 env) (run-body e2 env))
-              [(['plus e1 e2] :seq)] (unchecked-add ^long (run-body e1 env) ^long (run-body e2 env))
+              [['and e1 e2]] (bit-and (run-body e1 env) (run-body e2 env))
+              [['or e1 e2]]  (bit-or (run-body e1 env) (run-body e2 env))
+              [['xor e1 e2]] (bit-xor (run-body e1 env) (run-body e2 env))
+              [['plus e1 e2]] (unchecked-add ^long (run-body e1 env) ^long (run-body e2 env))
 
               ;;if0
-              [(['if0 e0 e1 e2] :seq)]
+              [['if0 e0 e1 e2]]
               (if (= 0 (run-body e0 env))
                 (run-body e1 env)
                 (run-body e2 env))
 
               ;;fold
-              [(['fold n init (['lambda ([x acc] :seq) body] :seq)] :seq)]
+              [['fold n init ['lambda [x acc] body]]]
               (fold (run-body n env)
                     (run-body init env)
                     (fn [acc' x'] ;;switch arg order to be consistent with reduce
@@ -75,7 +76,7 @@
     (match [e]
 
       ;; Handle an entire program P
-      [(['lambda ([id] :seq) body] :seq)]
+      [['lambda [id] body]]
       (run-body body {id arg}))))
 
 ;; ===============================================

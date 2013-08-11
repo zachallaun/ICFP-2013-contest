@@ -42,65 +42,65 @@
 
   (fact "invalid programs"
     ;; too many arguments
-    (run-program '(lambda (x y) 1) 5) =not=> 5)
+    (run-program '[lambda [x y] 1] 5) =not=> 5)
 
   (fact "can be a constant"
-    (run-program '(lambda (x) 1) 123) => 1
-    (run-program '(lambda (x) 0) 123) => 0)
+    (run-program '[lambda [x] 1] 123) => 1
+    (run-program '[lambda [x] 0] 123) => 0)
 
   (fact "can be the argument"
-    (run-program '(lambda (x) x) 123) => 123)
+    (run-program '[lambda [x] x] 123) => 123)
 
   (fact "can be a unary operation: not, shl1, shr1, shr4, shr16"
-    (run-program '(lambda (x) (not x)) 0) => -1
+    (run-program '[lambda [x] [not x]] 0) => -1
 
-    (run-program '(lambda (x) (shl1 x)) 1) => 2
-    (run-program '(lambda (x) (shl1 x)) -1) => #(> 0 %)
+    (run-program '[lambda [x] [shl1 x]] 1) => 2
+    (run-program '[lambda [x] [shl1 x]] -1) => #(> 0 %)
 
-    (run-program '(lambda (x) (shr1 x)) 2) => 1
+    (run-program '[lambda [x] [shr1 x]] 2) => 1
 
-    (run-program '(lambda (x) (shr4 x)) 16) => 1
+    (run-program '[lambda [x] [shr4 x]] 16) => 1
 
-    (run-program '(lambda (x) (shr16 x)) 65536) => 1
-    (run-program '(lambda (x) (shr16 x)) 0) => 0)
+    (run-program '[lambda [x] [shr16 x]] 65536) => 1
+    (run-program '[lambda [x] [shr16 x]] 0) => 0)
 
   (fact "can be a binary operation: and or xor plus"
-    (run-program '(lambda (x) (and x 1)) 2) => 0
+    (run-program '[lambda [x] [and x 1]] 2) => 0
 
-    (run-program '(lambda (x) (or x 1)) 2) => 3
-    (run-program '(lambda (x) (or x 1)) 1) => 1
+    (run-program '[lambda [x] [or x 1]] 2) => 3
+    (run-program '[lambda [x] [or x 1]] 1) => 1
 
-    (run-program '(lambda (x) (xor x 1)) 2) => 3
-    (run-program '(lambda (x) (xor x 1)) 1) => 0
+    (run-program '[lambda [x] [xor x 1]] 2) => 3
+    (run-program '[lambda [x] [xor x 1]] 1) => 0
 
-    (run-program '(lambda (x) (plus x 1)) 1) => 2
-    (run-program '(lambda (x) (plus x 0)) 8) => 8)
+    (run-program '[lambda [x] [plus x 1]] 1) => 2
+    (run-program '[lambda [x] [plus x 0]] 8) => 8)
 
   (fact "can be arbitrarily nested"
-    (run-program '(lambda (x) (plus (shr1 x) (shl1 1))) 2) => 3)
+    (run-program '[lambda [x] [plus [shr1 x] [shl1 1]]] 2) => 3)
 
   (fact "can include fold"
-    (run-program '(lambda (x) (fold x 0 (lambda (y z) (or y z)))) 0x1122334455667788)
+    (run-program '[lambda [x] [fold x 0 [lambda [y z] [or y z]]]] 0x1122334455667788)
       => 255
 
-    (run-program '(lambda (x) (fold x 0 (lambda (y z) (plus y z)))) 0x1122334455667788)
+    (run-program '[lambda [x] [fold x 0 [lambda [y z] [plus y z]]]] 0x1122334455667788)
       => 612)
 
   (fact "can include if"
-    (run-program '(lambda (x) (if0 x 0 1)) 1) => 1
-    (run-program '(lambda (x) (if0 x 0 1)) 42) => 1
-    (run-program '(lambda (x) (if0 x 0 1)) 0) => 0
-    (run-program '(lambda (x) (if0 x 0 1)) -1) => 1
+    (run-program '[lambda [x] [if0 x 0 1]] 1) => 1
+    (run-program '[lambda [x] [if0 x 0 1]] 42) => 1
+    (run-program '[lambda [x] [if0 x 0 1]] 0) => 0
+    (run-program '[lambda [x] [if0 x 0 1]] -1) => 1
 
-    (run-program '(lambda (x) (if0 x
-                        (plus x 1)
-                        (shl1 x)))
+    (run-program '[lambda [x] [if0 x
+                        [plus x 1]
+                        [shl1 x]]]
       0) => 1
 
-    (run-program '(lambda (x) (if0 x
-                        (plus x 1)
-                        (shl1 x)))
+    (run-program '[lambda [x] [if0 x
+                        [plus x 1]
+                        [shl1 x]]]
       1) => 2)
 
   (fact "unchecked math"
-    (run-program '(lambda (x) (plus 1 x)) 0x7FFFFFFFFFFFFFFF) => -0x8000000000000000))
+    (run-program '[lambda [x] [plus 1 x]] 0x7FFFFFFFFFFFFFFF) => -0x8000000000000000))
