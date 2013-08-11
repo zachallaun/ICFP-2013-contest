@@ -133,7 +133,7 @@
     (bito lastbit)
     (conso 0 fstbv out)))
 
-;; proof of concept.  you could also write this recursively, maybe?
+;; turn [b1 b2 b3 b4 ... bn] into [0 0 0 0 b1 b2 b3 b4 ... bn-3]
 (defn bitvector-shr4o [bv out]
   (fresh [tmp1 tmp2 tmp3]
     (bitvector-shr1o bv tmp1)
