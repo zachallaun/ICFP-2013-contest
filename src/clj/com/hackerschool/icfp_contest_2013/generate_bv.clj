@@ -124,9 +124,6 @@
                                 [:mismatch in out]
                                 [:win]))))))
 
-(defn rand-hex []
-  (map hexstr (rand-longs)))
-
 (comment
   (def test-problem
     {:challenge "(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))",
