@@ -26,11 +26,11 @@
 ;; a working relational not-membero.  succeeds if elem isn't a member of ls
 (defn not-membero [elem ls]
   (conde
-   [(emptyo ls)] ;; just succeed if ls is empty
-   [(fresh [a d]
-      (conso a d ls) ;; unify (a d) with ls
-      (!= a elem)
-      (not-membero elem d))]))
+    [(emptyo ls)] ;; just succeed if ls is empty
+    [(fresh [a d]
+       (conso a d ls) ;; unify (a d) with ls
+       (!= a elem)
+       (not-membero elem d))]))
 
 (defn uniono [x y out]
   (conde
@@ -53,13 +53,6 @@
           (fresh [res]
             (conso a res out)
             (uniono x d res))]))]))
-
-(comment
-  ;; diverges, apparently :(
-  (run 3 [q]
-    (uniono q [1] [1 2 3]))
-
-  )
 
 (defn operatorso [p ops]
   (conde
@@ -140,7 +133,6 @@
     (operatorso q ['fold]))
 
   )
-
 
 
 (defn op
