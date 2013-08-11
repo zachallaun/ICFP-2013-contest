@@ -104,7 +104,7 @@
 
     ;; fold
     [(fresh [e0 e1 e2 id]
-       (== p ['fold e0 e1 [['lambda [id] e2]]])
+       (== p ['fold e0 e1 ['lambda [id] e2]])
        (fresh [res0 res1 res2]
          (operatorso e0 res0)
          (operatorso e1 res1)
