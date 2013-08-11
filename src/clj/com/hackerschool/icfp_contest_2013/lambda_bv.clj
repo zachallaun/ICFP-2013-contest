@@ -126,14 +126,6 @@
     (conso fstbit rstbits bv)
     (appendo rstbits [0] out)))
 
-;; proof of concept.  you could also write this recursively, maybe?
-(defn bitvector-shl4o [bv out]
-  (fresh [tmp1 tmp2 tmp3]
-    (bitvector-shl1o bv tmp1)
-    (bitvector-shl1o tmp1 tmp2)
-    (bitvector-shl1o tmp2 tmp3)
-    (bitvector-shl1o tmp3 out)))
-
 ;; turn [b1 b2 b3 b4 ... bn] into [0 b1 b2 b3 b4 ... bn-1]
 (defn bitvector-shr1o [bv out]
   (fresh [fstbv lastbit]
@@ -141,29 +133,32 @@
     (bito lastbit)
     (conso 0 fstbv out)))
 
-
-
-;; turn [b1 b2 b3 b4 ... bn] into [0 0 0 0 b1 b2 b3 b4 ... bn-3]
+;; proof of concept.  you could also write this recursively, maybe?
 (defn bitvector-shr4o [bv out]
-  (fresh [b1 b2 b3 b4 middlebits bn3 bn2 bn1 bn]
-     (== [b1 b2 b3 b4 middlebits] bv)
+  (fresh [tmp1 tmp2 tmp3]
+    (bitvector-shr1o bv tmp1)
+    (bitvector-shr1o tmp1 tmp2)
+    (bitvector-shr1o tmp2 tmp3)
+    (bitvector-shr1o tmp3 out)))
 
-     ;; ensure that all the bits are bits!
-     (bito b1) (bito b2) (bito b3) (bito b4)
-     (bito bn3) (bito bn2) (bito bn1) (bito bn)
-
-     (== [0 0 0 0 b1 b2 b3 b4 middlebits] out)))
+;; proof of concept.  you could also write this recursively, maybe?
+(defn bitvector-shr16o [bv out]
+  (fresh [tmp1 tmp2 tmp3]
+    (bitvector-shr4o bv tmp1)
+    (bitvector-shr4o tmp1 tmp2)
+    (bitvector-shr4o tmp2 tmp3)
+    (bitvector-shr4o tmp3 out)))
 
 (comment
   (run 1 [q] (bito 1))
 
   (run 1 [q] (bitvector-shl1o [1 1 1] q))
 
-  (run 1 [q] (bitvector-shl4o [1 1 1 1 1] q))
-
-  (run 1 [q] (bitvector-shr1o [1 1 1] q))
-
   (run 1 [q] (bitvector-shr4o [1 1 1 1 1] q))
+
+  (run 1 [q] (bitvector-shr4o [1 1 1] q))
+
+  (run 1 [q] (bitvector-shr16o [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1] q))
 
 )
 
