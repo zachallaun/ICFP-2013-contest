@@ -113,11 +113,12 @@
 ;; todo: "shl1" | "shr1" | "shr4" | "shr16"
 ;; todo: "and" | "or" | "xor" | "plus"
 
-;; assumes that input is a 64-element list
-;; (defn bitvector-shl1o [bv out]
-;;   (fresh [fstbit rstbits]
-;;     (conso fstbit rstbits bv)
-;;     (appendo rstbits 0 out)))
+;; assumes that input is a list.
+;; TODO: test me
+(defn bitvector-shl1o [bv out]
+  (fresh [fstbit rstbits]
+    (conso fstbit rstbits bv)
+    (appendo rstbits 0 out)))
 
 
 (defn run-bodyo [e env out]
