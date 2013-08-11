@@ -190,6 +190,91 @@ Op (fold e0 e1 (lambda (x y) e2)) = {'fold'} U Op e0 U Op e1 U Op e2
 ;;   [program ops]
 ;;   )
 
+
+(defn sizeo
+  "Unifies `out` with a vector of 'a's that's the length of the size
+  of the program `p`."
+  [p out]
+  (conde
+    [(== p 0) (== out ['a])]
+    [(== p 1) (== out ['a])]
+    [(membero p identifiers) (== out ['a])]
+
+    ;; if0
+    [(fresh [e0 e1 e2]
+       (== p ['if0 e0 e1 e2])
+       (fresh [res0 res1 res2 tmp1 tmp2]
+         (conso res0 res1 tmp1)
+         (conso tmp1 res2 tmp2)
+         (conso tmp2 'a out)
+         (sizeo e0 res0)
+         (sizeo e1 res1)
+         (sizeo e2 res2)))]
+
+    ;; fold
+    [(fresh [e0 e1 e2 id]
+       (== p ['fold e0 e1 ['lambda [id] e2]])
+       (fresh [res0 res1 res2 tmp1 tmp2 tmp3]
+         (conso res0 res1 tmp1)
+         (conso tmp1 res2 tmp2)
+         (conso tmp2 'a tmp3)
+         (conso tmp3 'a out)
+         (sizeo e0 res0)
+         (sizeo e1 res1)
+         (sizeo e2 res2)))]
+
+    ;; unary ops
+    [(fresh [op e0 res]
+       (== p [op e0])
+       (conde
+        [(== op 'not)]
+        [(== op 'shl1)]
+        [(== op 'shr1)]
+        [(== op 'shr4)]
+        [(== op 'shr16)])
+       (conso 'a res out)
+       (sizeo e0 res))]
+
+    ;; binary ops
+    [(fresh [op e0 e1]
+       (== p [op e0 e1])
+       (conde
+        [(== op 'and)]
+        [(== op 'or)]
+        [(== op 'xor)]
+        [(== op 'plus)])
+       (fresh [res0 res1 tmp]
+         ;; make sure that op is part of ops
+         (conso res0 res1 tmp)
+         (conso tmp 'a out)
+         (sizeo e0 res0)
+         (sizeo e1 res1)))]))
+
+(defn make-size [n]
+  (cond
+   (= n 0) []
+   :else (vec (cons 'a (make-size (dec n))))))
+
+(comment
+
+  (make-size 4)
+
+  (run 1 [q] (sizeo 0 q))
+
+  (run 3 [q] (sizeo '[not 1] q))
+
+  (run 4 [q] (sizeo q '[a a a a]))
+
+  (run 4 [q] (sizeo q (make-size 4)))
+
+  (run* [q] (sizeo q (make-size 2)))
+
+  (run* [q] (sizeo q (make-size 3)))
+
+)
+
+  
+
 (comment
 
   (defn anyo [g]
