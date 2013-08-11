@@ -79,6 +79,27 @@
             (= (run-program program in) out))
           examples))
 
+(defn find-solution
+  "Repeatedly generate new I/O examples and run all candidates against them
+   until at most one program is left standing. Return the winner or the empty
+   vector, if no program won."
+  [candidates oracle]
+  (if (<= (count candidates) 1)
+    candidates
+    (let [examples (oracle)
+          remaining-candidates (filter (fn [candidate]
+                                         (correct-program? candidate examples))
+                                       candidates)]
+      (recur remaining-candidates oracle))))
+
+(defn training-oracle
+  "Return an I/O oracle given a training problem."
+  [training-problem]
+  (fn []
+    (let [e (read-expression (:challenge training-problem))]
+      (into {} (for [l (rand-longs)]
+                 [l (run-program e l)])))))
+
 (defn unchecked-long
   [bi]
   (if (= (class bi) clojure.lang.BigInt)
@@ -98,7 +119,7 @@
   (map hexstr (rand-longs)))
 
 (comment
-  (def test
+  (def test-problem
     {:challenge "(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))",
      :size 18,
      :operators ["if0" "not" "or" "plus" "xor"],
@@ -108,12 +129,23 @@
     (into {} (for [l (rand-longs)]
                [l (run-program e l)])))
 
+  ;; TODO: this has been processed slightly:
+  ;; operators is normally a string-vector
+  (def small-problem
+    {:challenge "(lambda (x) (shr4 (shl1 x)))",
+     :size 3,
+     :operators ['shl1 'shr4],
+     :id "foo$to-the$bar"})
+
+  (find-solution (generate-programs
+                  (:size small-problem)
+                  (:operators small-problem))
+                 (training-oracle small-problem))
+
   (unchecked-long 0xFFFFFFFFFFFFFFFF)
 
   265 random longs
   (rand-long Long/MAX_VALUE)
-
-
 
   Long
   (- (rand) 0.5)
