@@ -175,7 +175,7 @@
       (let [result (oracle :submit attempt)]
         (match [result]
           [[:win]] attempt
-          [[:mismatch in out]] (recur (merge {in out} (oracles :examples))
+          [[:mismatch in out]] (recur (merge {in out} (oracle :examples))
                                       (rest culled))
           [[:error msg]] (do (println (str "ERROR: " msg))
                              (recur (oracle :examples) culled)))))))
