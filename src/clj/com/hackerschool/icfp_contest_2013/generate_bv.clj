@@ -72,22 +72,43 @@
       (str/replace ")" "]")
       read-string))
 
+(defn correct-program?
+  "Returns true if the program produces the correct output given a map of {input output} examples"
+  [program examples]
+  (every? (fn [[in out]]
+            (= (run-program program in) out))
+          examples))
 
+(defn unchecked-long
+  [bi]
+  (if (= (class bi) clojure.lang.BigInt)
+    (.longValue (.bipart bi))
+    (long bi)))
+
+(defn hexstr
+  "given a number, returns an 8-byte hex string of the form '0x0000000000000000'"
+  [n]
+  (let [unpadded-str (Long/toHexString n)
+        cnt (count unpadded-str)]
+    (str "0x"
+         (apply str (repeat (- 16 cnt) "0"))
+         (str/upper-case unpadded-str))))
+
+(defn rand-64-bit-hex []
+  (map hexstr (rand-longs)))
 
 (comment
   (def test
     {:challenge "(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))",
      :size 18,
-     :operators ['if0' 'not' 'or' 'plus' 'xor'],
-     :id 'h7oZTxtwiD00OapNDtCAstRG'})
+     :operators ["if0" "not" "or" "plus" "xor"],
+     :id "h7oZTxtwiD00OapNDtCAstRG"})
 
   (let [e (read-expression "(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))",)]
     (into {} (for [l (rand-longs)]
                [l (run-program e l)])))
 
-
-  (unchecked-add 0x7FFFFFFFFFFFFFFF 1)
-  -9223372036854775808
+  (unchecked-long 0xFFFFFFFFFFFFFFFF)
 
   265 random longs
   (rand-long Long/MAX_VALUE)
