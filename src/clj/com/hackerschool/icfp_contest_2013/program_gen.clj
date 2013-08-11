@@ -76,20 +76,6 @@
             (uniono x d res))]
          ))]))
 (comment
-
-  ;; A few tests that seem to work:
-  (run 5 [q]
-       (uniono [1 2 3] [3] q))
-
-  (run 5 [q]
-       (uniono [1 2 3] [4 5 6] q))
-
-  (run 5 [q]
-       (uniono [] [4 5 6] q))
-
-  (run 10 [q]
-       (uniono [4 5 6] q [1 2 3 4 5 6]))
-
   ;; oh shit, it gives me a freaking OOM error!
   (run 1 [q]
        (uniono q [1] []))
@@ -97,12 +83,7 @@
   ;; oh shit, so does this!
   (run 5 [q]
        (uniono q [1] [1 2 3]))
-
-  ((3 1 2 3) [1 2 3])
-
   )
-
-
 
 (defn operatorso [p ops]
   (conde

@@ -19,9 +19,18 @@
   (doseq [[p size opset] program-examples]
     (sizeop p) => [size opset]))
 
-
-;; FIXME: produces "clojure.lang.ArityException: Wrong number of args
-;; (0) passed to: PersistentVector"
 (facts "about core.logic runs"
-  (fact "1"
-    (run 5 [q] (uniono [1 2 3] [3] q)) => '([1 2 3])))
+  (fact
+    (run 5 [q] (uniono [1 2 3] [3] q)) => '([1 2 3]))
+
+  (fact
+    (run 5 [q] (uniono [1 2 3] [4 5 6] q)) => '((4 5 6 1 2 3)))
+
+  (fact
+    (run 5 [q] (uniono [] [4 5 6] q)) => '([4 5 6] (4 5 6) (4 5 6) (4 5 6) (4 5 6)))
+
+  (fact
+    (run 10 [q] (uniono [4 5 6] q [1 2 3 4 5 6])) =>
+    '((1 2 3) (1 2 3 4) (1 2 3 5) (1 2 4 3) (1 2 3 4 4) (1 2 3 6) (1 4 2 3) (4 1 2 3) (1 2 3 4 5) (1 2 3 5 4)))
+    
+    )
