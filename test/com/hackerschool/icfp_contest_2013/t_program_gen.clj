@@ -30,7 +30,14 @@
     (run 5 [q] (uniono [] [4 5 6] q)) => '([4 5 6] (4 5 6) (4 5 6) (4 5 6) (4 5 6)))
 
   (fact
-    (run 10 [q] (uniono [4 5 6] q [1 2 3 4 5 6])) =>
-    '((1 2 3) (1 2 3 4) (1 2 3 5) (1 2 4 3) (1 2 3 4 4) (1 2 3 6) (1 4 2 3) (4 1 2 3) (1 2 3 4 5) (1 2 3 5 4)))
-    
-    )
+    (run 10 [q] (uniono [4 5 6] q [1 2 3 4 5 6])) => '((1 2 3) (1 2 3 4) (1 2 3 5) (1 2 4 3) (1 2 3 4 4) (1 2 3 6) (1 4 2 3) (4 1 2 3) (1 2 3 4 5) (1 2 3 5 4)))
+  
+  (fact "1"
+    (run 5 [q] (uniono [1 2 3] [3] q)) => '([1 2 3])))
+
+(facts "about `operatorso`"
+  (fact "the only programs w/o operators are 0 1 x y z"
+    (let [programs (run 10 [q] (operatorso q ()))]
+      (count programs) => 5
+      (set programs) => #{0 1 'x 'y 'z})))
+

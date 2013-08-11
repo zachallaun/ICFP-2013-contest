@@ -19,9 +19,9 @@
 ;; for comparison's sake
 (defn not-member [elem ls]
   (cond
-   (empty? ls) 't
-   (= (first ls) elem) 'f
-   :else (not-member elem (rest ls))))
+    (empty? ls) 't
+    (= (first ls) elem) 'f
+    :else (not-member elem (rest ls))))
 
 ;; a working relational not-membero.  succeeds if elem isn't a member of ls
 (defn not-membero [elem ls]
@@ -34,25 +34,25 @@
 
 (comment
   (run 1 [q]
-       (not-membero 1 [2 3]) (== q :yay))
+    (not-membero 1 [2 3]) (== q :yay))
 
   (run 1 [q]
-       (not-membero 'a ['b 'c]))
+    (not-membero 'a ['b 'c]))
 
   (run 1 [q]
-       (not-membero 'a []))
+    (not-membero 'a []))
 
   (run 1 [q]
-       (not-membero 'a ['a 'b 'a 'c]))
+    (not-membero 'a ['a 'b 'a 'c]))
 
   (run 1 [q]
-       (not-membero 'a ['a 'b 'c]))
+    (not-membero 'a ['a 'b 'c]))
 
   (run 3 [q]
-       (not-membero 'a q))
+    (not-membero 'a q))
 
   (run 2 [q]
-       (not-membero q ['b 'c]))
+    (not-membero q ['b 'c]))
   )
 
 (defn uniono [x y out]
@@ -76,13 +76,15 @@
             (uniono x d res))]
          ))]))
 (comment
+
   ;; oh shit, it gives me a freaking OOM error!
   (run 1 [q]
-       (uniono q [1] []))
+    (uniono q [1] []))
 
   ;; oh shit, so does this!
   (run 5 [q]
-       (uniono q [1] [1 2 3]))
+    (uniono q [1] [1 2 3]))
+
   )
 
 (defn operatorso [p ops]
@@ -91,19 +93,22 @@
     [(== p 1) (== ops ())]
     [(membero p identifiers) (== ops ())]
 
-    ;; if
-    [(fresh [e0 e1 e2]
+    ;; if0
+    [(membero 'if0 ops)
+     (fresh [e0 e1 e2]
        (== p ['if0 e0 e1 e2])
        (fresh [res0 res1 res2]
          (operatorso e0 res0)
          (operatorso e1 res1)
          (operatorso e2 res2)
-         (fresh [tmp]
-           (uniono res0 res1 tmp)
-           (uniono res2 tmp ops))))]
+         (fresh [tmp1]
+           (uniono res0 res1 tmp1)
+           (uniono res2 tmp1 ops))))]
 
     ;; fold
-    [(fresh [e0 e1 e2 id]
+    ;; TODO: tfold (top-level fold)
+    [(membero 'fold ops)
+     (fresh [e0 e1 e2 id]
        (== p ['fold e0 e1 ['lambda [id] e2]])
        (fresh [res0 res1 res2]
          (operatorso e0 res0)
@@ -117,11 +122,16 @@
     [(fresh [op e0 res]
        (== p [op e0])
        (conde
-        [(== op 'not)]
-        [(== op 'shl1)]
-        [(== op 'shr1)]
-        [(== op 'shr4)]
-        [(== op 'shr16)])
+         [(== op 'not)
+          (membero 'not ops)]
+         [(== op 'shl1)
+          (membero 'shl1 ops)]
+         [(== op 'shr1)
+          (membero 'shr1 ops)]
+         [(== op 'shr4)
+          (membero 'shr4 ops)]
+         [(== op 'shr16)
+          (membero 'shr16 ops)])
        (operatorso e0 res)
        ;; TODO: don't know if this syntax for listifying op is OK
        (uniono [op] res ops))]
@@ -130,50 +140,54 @@
     [(fresh [op e0 e1]
        (== p [op e0 e1])
        (conde
-        [(== op 'and)]
-        [(== op 'or)]
-        [(== op 'xor)]
-        [(== op 'plus)])
+         [(== op 'and)
+          (membero 'and ops)]
+         [(== op 'or)
+          (membero 'or ops)]
+         [(== op 'xor)
+          (membero 'xor ops)]
+         [(== op 'plus)
+          (membero 'plus ops)])
        (fresh [res0 res1 res2 ]
          (operatorso e0 res0)
          (operatorso e1 res1)
          ;; make sure that op is part of ops
          (uniono res0 res1 res2)
          ;; am I allowed to turn op into a list this way?
-         (uniono res2 [op] ops)))]
-))
+         (uniono res2 [op] ops)))]))
 
 (comment
   (run 4 [q]
-       (membero q '[a b c]))
+    (membero q '[a b c]))
 
   (run 4 [q]
-       (membero 'a q))
+    (membero 'a q))
 
   (run 4 [q]
-       (fresh [v]
-         (membero q [v 'a])))
+    (fresh [v]
+      (membero q [v 'a])))
 
   ;; Trying to generate some expressions that have no operators
   (run 10 [q]
-       (operatorso q ()))
+    (operatorso q ()))
+  (0 1 x y z [if0 0 0 0] [if0 0 0 0] [if0 0 0 0] [if0 0 0 1] [if0 0 0 0])
 
   (run 30 [q]
-       (fresh [x y]
-         (operatorso x y)
-         (conso x y q))) ;; unifies q with (x y) pairs,
-                         ;; which will just look like (x) if y is ()
+    (fresh [x y]
+      (operatorso x y)
+      (conso x y q))) ;; unifies q with (x y) pairs,
+  ;; which will just look like (x) if y is ()
 
   ;; todo: this is busted and I don't know why!
   (run 5 [q]
-       (operatorso q ['plus]))
+    (operatorso q ['plus]))
 
   (run 1 [q]
-       (fresh [tmp]
-              (appendo [1 2 3] [4 5 6] tmp)
-              (appendo tmp [7 8 9] q)))
+    (fresh [tmp]
+      (appendo [1 2 3] [4 5 6] tmp)
+      (appendo tmp [7 8 9] q)))
 
-)
+  )
 ;; ((1 2 3 4 5 6 7 8 9))
 
 
@@ -228,8 +242,8 @@ Op (fold e0 e1 (lambda (x y) e2)) = {'fold'} U Op e0 U Op e1 U Op e2
 
   (defn anyo [g]
     (conde
-     [g]
-     [(anyo g)]))
+      [g]
+      [(anyo g)]))
 
   (defn nevero []
     (anyo (== true false)))
