@@ -60,9 +60,11 @@
     ;; if y is an empty set, then x is the union of x and y.
     [(emptyo y) (== x out)]
     [(emptyo x) (== y out)]
+    [(emptyo out) (emptyo x) (emptyo y)]
 
     ;; otherwise, y is a pair of a and d.
-    [(fresh [a d]
+    [(!= x []) (!= y []) (!= out [])
+     (fresh [a d]
        (conso a d y) ;a=3, d=()
        (conde
          ;; if a is a member of x, then we can "peel off" a,
@@ -73,17 +75,14 @@
          [(not-membero a x)
           (fresh [res]
             (conso a res out)
-            (uniono x d res))]
-         ))]))
+            (uniono x d res))]))]))
+
 (comment
 
-  ;; oh shit, it gives me a freaking OOM error!
-  (run 1 [q]
-    (uniono q [1] []))
-
   ;; oh shit, so does this!
-  (run 5 [q]
+  (run 3 [q]
     (uniono q [1] [1 2 3]))
+  
 
   )
 
@@ -168,9 +167,9 @@
       (membero q [v 'a])))
 
   ;; Trying to generate some expressions that have no operators
-  (run 10 [q]
-    (operatorso q ()))
-  (0 1 x y z [if0 0 0 0] [if0 0 0 0] [if0 0 0 0] [if0 0 0 1] [if0 0 0 0])
+  (run 1 [q]
+    (operatorso q ['if0]))
+
 
   (run 30 [q]
     (fresh [x y]
