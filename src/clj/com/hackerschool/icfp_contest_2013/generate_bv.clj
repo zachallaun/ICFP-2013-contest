@@ -1,28 +1,41 @@
 (ns com.hackerschool.icfp-contest-2013.generate-bv
   (:require [clojure.string :as str]
-            [com.hackerschool.icfp-contest-2013.lambda-bv :refer [run-program]]))
+            [com.hackerschool.icfp-contest-2013.lambda-bv :refer [run-program]]
+            [clojure.core.match :refer [match]]))
 
 ;;TODO: memoize fns for speed.
 
 (def all-operators
   "Every operator in the λBV language."
   '[not shl1 shr1 shr4 shr16
-    and or xor
+    plus and or xor
     if0])
+
+(def min-size
+  {'not 2 'shl1 2 'shr1 2 'shr4 2 'shr16 2
+   'plus 3 'and 3 'or 3 'xor 3
+   'if0 4
+   'fold 5})
+
+;; (op2 (op1 1) (op1 0)) ;; 4 left
+
+;; (for [e0 (gen-exprs 3 ops)
+;;       e1 (gen-exprs (- coutner (size e0)) ops)]
+;;   [op2 e0 e1])
 
 (defn generate-expressions-with
   "Generate all expressions possible from an operator and a set of expressions."
   [operator expressions]
   (case operator
-    (shl1 shr1 shr4 shr16 not)  (for [expr expressions]
-                                  [operator expr])
-    (and or xor)                (for [expr1 expressions
-                                      expr2 expressions]
-                                  [operator expr1 expr2])
-    (if0)                       (for [expr1 expressions
-                                      expr2 expressions
-                                      expr3 expressions]
-                                  ['if0 expr1 expr2 expr3])))
+    (shl1 shr1 shr4 shr16 not) (for [expr expressions]
+                                 [operator expr])
+    (plus and or xor) (for [expr1 expressions
+                            expr2 expressions]
+                        [operator expr1 expr2])
+    (if0) (for [expr1 expressions
+                expr2 expressions
+                expr3 expressions]
+            [operator expr1 expr2 expr3])))
 
 (defn generate-expressions'
   "Generate all expressions as above; accumulate in expressions."
@@ -51,13 +64,16 @@
        (generate-expressions size operators)))
 
 (comment
-  (generate-programs 1 '[and shl1 shr4 xor or])
-  (take 50 (generate-programs 10 '[and if0 shr4 xor]))
+  (generate-programs 2 '[and])
+
+  (take 5 (generate-programs 10 '[and if0 shr4 xor]))
+
 
   generate all programs with opset
   test against input/output pairs
   submit first program that passes
 
+  (generate-programs 1 '[plus])
 
   )
 
@@ -147,8 +163,30 @@
   265 random longs
   (rand-long Long/MAX_VALUE)
 
+
   Long
   (- (rand) 0.5)
 
-
   )
+
+(defn size
+  "The size of the provided list expression, via the contest rules:
+
+                              |0| = 1
+                              |1| = 1
+                              |x| = 1
+                 |(if0 e0 e1 e2)| = 1 + |e0| + |e1| + |e2|
+ |(fold e0 e1 (lambda (x y) e2))| = 2 + |e0| + |e1| + |e2|
+                       |(op1 e0)| = 1 + |e0|
+                    |(op2 e0 e1)| = 1 + |e0| + |e1|
+                 |(lambda (x) e)| = 1 + |e|
+"
+  [p]
+  (match [p]
+    [['lambda _ e]] (+ 1 (size e))
+    [(:or 0 1)] 1
+    [(_ :guard symbol?)] 1
+    [['if0 e0 e1 e2]] (+ 1 (size e0) (size e1) (size e2))
+    [['fold e0 e1 ['lambda _ e2]]] (+ 2 (size e0) (size e1) (size e2))
+    [[op1 e]] (+ 1 (size e))
+    [[op2 e0 e1]] (+ 1 (size e0) (size e1))))
