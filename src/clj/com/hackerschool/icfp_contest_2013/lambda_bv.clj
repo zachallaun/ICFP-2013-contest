@@ -120,6 +120,10 @@
     (conso fstbit rstbits bv)
     (appendo rstbits 0 out)))
 
+(defn bitvector-shr1o [bv out]
+  (fresh [fstbv lastbit]
+    (appendo fstbv lastbit bv)
+    (conso 0 fstbv out)))
 
 (defn run-bodyo [e env out]
   (conde
