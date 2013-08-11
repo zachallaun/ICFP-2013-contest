@@ -33,54 +33,73 @@
     plus and or xor
     if0])
 
-;; (op2 (op1 1) (op1 0)) ;; 4 left
+(defn eliminate-dead-code
+  [expr]
+  (match [expr]
 
-;; (for [e0 (gen-exprs 3 ops)
-;;       e1 (gen-exprs (- coutner (size e0)) ops)]
-;;   [op2 e0 e1])
+         [['lambda [x] body]] ['lambda [x] (eliminate-dead-code body)]
 
-;; (defn generate-expressions-with
-;;   "Generate all expressions possible from an operator and a set of expressions."
-;;   [operator expressions]
-;;   (case operator
-;;     (shl1 shr1 shr4 shr16 not) (for [expr expressions]
-;;                                  [operator expr])
-;;     (plus and or xor) (for [expr1 expressions
-;;                             expr2 expressions]
-;;                         [operator expr1 expr2])
-;;     (if0) (for [expr1 expressions
-;;                 expr2 expressions
-;;                 expr3 expressions]
-;;             [operator expr1 expr2 expr3])))
+         [[(:or 'shr1 'shr4 'shr16) 0]] 0
 
-;; (defn generate-expressions'
-;;   "Generate all expressions as above; accumulate in expressions."
-;;   [opsize depth operators expressions]
-;;   (if (= depth 0)
-;;     expressions
-;;     (let [new-expressions
-;;           (mapcat (fn [op]
-;;                     (generate-expressions-with op expressions))
-;;                   operators)]
-;;       (generate-expressions'
-;;        opsize
-;;        (dec depth)
-;;        operators
-;;        (concat (filter #(>= opsize (size %))
-;;                        new-expressions)
-;;                expressions)))))
+         [['plus e1 0]] (eliminate-dead-code e1)
+         [['plus 0 e1]] (eliminate-dead-code e1)
 
-;; (defn generate-expressions
-;;   "Generate all expressions with a specified depth and operator set."
-;;   [opsize depth operators]
-;;   (generate-expressions' opsize depth operators '[0 1 x]))
+         [['or e1 0]] (eliminate-dead-code e1)
+         [['or 0 e1]] (eliminate-dead-code e1)
 
-;; (defn generate-programs
-;;   "Generate all programs with a specified depth and operator set."
-;;   [opsize depth operators]
-;;   (map (fn [expr]
-;;          ['lambda ['x] expr])
-;;        (generate-expressions opsize depth operators)))
+         [['xor e1 0]] (eliminate-dead-code e1)
+         [['xor 0 e1]] (eliminate-dead-code e1)
+
+         [['and e1 0]] 0
+         [['and 0 e1]] 0
+
+         [['if0 0 e1 _]] (eliminate-dead-code e1)
+         [['if0 1 _ e2]] (eliminate-dead-code e2)
+
+         [[unop e1]] [unop (eliminate-dead-code e1)]
+
+         [[binop e1 e2]] [binop
+                          (eliminate-dead-code e1)
+                          (eliminate-dead-code e2)]
+
+         [['if0 e0 e1 e2]] ['if0
+                            (eliminate-dead-code e0)
+                            (eliminate-dead-code e1)
+                            (eliminate-dead-code e2)]
+
+         [_] expr))
+
+(defn constant-fold
+  [expr]
+  (match [expr]
+         [(:or 0 1)] expr
+
+         [['lambda [x] body]] ['lambda [x] (constant-fold body)]
+
+         ;; Note: Special-casing plus because constant folding it could
+         ;; introduce the illegal constant 2.
+         [['plus e1 e2]] expr
+
+         [[unop e1]] expr
+
+         [[binop e1 e2]] (let [e1' (constant-fold e1)
+                               e2' (constant-fold e2)]
+                           (if (and (number? e1')
+                                    (number? e2'))
+                             (case binop
+                               and  (bit-and e1' e2')
+                               xor  (bit-xor e1' e2')
+                               or   (bit-or e1' e2'))
+                             [binop e1 e2]))
+
+         [['if0 e0 e1 e2]] (let [e0' (constant-fold e0)
+                                 e1' (constant-fold e1)
+                                 e2' (constant-fold e2)]
+                             ['if0 e0' e1' e2'])
+
+         [_] expr))
+
+(def optimize (comp eliminate-dead-code constant-fold))
 
 (def min-size
   {'not 2 'shl1 2 'shr1 2 'shr4 2 'shr16 2
@@ -129,25 +148,22 @@
 (defn generate-programs
   "Generate all programs with a certain op set and less than size `progsize`"
   [progsize ops]
-  (map (fn [expr]
-         ['lambda ['x] expr])
-       (generate-exprs (dec progsize) ops)))
+  (->> (generate-exprs (dec progsize) ops)
+       (map (fn [expr] ['lambda ['x] expr])) ;; make a program
+       (map constant-fold)
+       (map eliminate-dead-code)
+       distinct))
 
 (comment
-  (take 10 (generate-programs 8 '[plus xor]))
-
-  ([lambda [x] [shl1 0]] [lambda [x] [shl1 1]] [lambda [x] [shl1 x]] [lambda [x] 0] [lambda [x] 1] [lambda [x] x])
-
-
-  (take 5 (generate-programs 10 '[and if0 shr4 xor]))
-
-
   generate all programs with opset
   test against input/output pairs
   submit first program that passes
 
   (generate-programs 1 '[plus])
 
+  (def problem (first (drop 100 (generate-programs 5 '[and or plus if0]))))
+  problem
+  [problem (eliminate-dead-code problem)]
   )
 
 
