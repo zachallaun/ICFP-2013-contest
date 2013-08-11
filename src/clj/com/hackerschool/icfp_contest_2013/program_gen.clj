@@ -71,10 +71,10 @@
     [(membero 'if0 ops)
      (fresh [e0 e1 e2]
        (== p ['if0 e0 e1 e2])
-       (fresh [res0 res1 res2]
-         (fresh [tmp1]
-           (uniono res0 res1 tmp1)
-           (uniono res2 tmp1 ops))
+       (fresh [res0 res1 res2 tmp1 tmp2]
+         (uniono res0 res1 tmp1)
+         (uniono tmp1 res2 tmp2)
+         (uniono tmp2 ['if0] ops)
          (operatorso e0 res0)
          (operatorso e1 res1)
          (operatorso e2 res2)))]
@@ -84,9 +84,10 @@
     [(membero 'fold ops)
      (fresh [e0 e1 e2 id]
        (== p ['fold e0 e1 ['lambda [id] e2]])
-       (fresh [res0 res1 res2 tmp]
-         (uniono res0 res1 tmp)
-         (uniono res2 tmp ops)
+       (fresh [res0 res1 res2 tmp1 tmp2]
+         (uniono res0 res1 tmp1)
+         (uniono tmp1 res2 tmp2)
+         (uniono tmp2 ['fold] ops)
          (operatorso e0 res0)
          (operatorso e1 res1)
          (operatorso e2 res2)))]
@@ -105,7 +106,7 @@
           (membero 'shr4 ops)]
          [(== op 'shr16)
           (membero 'shr16 ops)])
-       (uniono [op] res ops)
+       (uniono res [op] ops)
        (operatorso e0 res))]
 
     ;; binary ops
@@ -120,10 +121,10 @@
           (membero 'xor ops)]
          [(== op 'plus)
           (membero 'plus ops)])
-       (fresh [res0 res1 res2]
+       (fresh [res0 res1 tmp]
          ;; make sure that op is part of ops
-         (uniono res0 res1 res2)
-         (uniono res2 [op] ops)
+         (uniono res0 res1 tmp)
+         (uniono tmp [op] ops)
          (operatorso e0 res0)
          (operatorso e1 res1)))]))
 
@@ -131,6 +132,13 @@
   ;; example: generate 10 expressions containing plus and xor
   (run 10 [q]
     (operatorso q ['plus 'xor]))
+
+  (run 10 [q]
+    (operatorso q ['if0]))
+
+  (run 10 [q]
+    (operatorso q ['fold]))
+
   )
 
 
