@@ -80,7 +80,7 @@
 
 (defn rand-longs []
   ;;TODO properly sample from full space of 64 bit vectors
-  (repeatedly 256 #(long (* (rand) Long/MAX_VALUE))))
+  (repeatedly #(long (* (rand) Long/MAX_VALUE))))
 
 (defn read-expression [s]
   (-> s
@@ -96,42 +96,35 @@
           examples))
 
 (defn find-solution
-  "Repeatedly generate new I/O examples and run all candidates against them
-   until at most one program is left standing. Return the winner or the empty
-   vector, if no program won."
   [candidates oracle]
-  (if (<= (count candidates) 1)
-    candidates
-    (let [examples (oracle)
-          remaining-candidates (filter (fn [candidate]
-                                         (correct-program? candidate examples))
-                                       candidates)]
-      (recur remaining-candidates oracle))))
+  (loop [examples (oracle :examples)
+         culled (filter #(correct-program? % examples) candidates)]
+    (when-let [attempt (first culled)]
+      (let [result (oracle :submit attempt)]
+        (match [result]
+          [[:win]] attempt
+          [[:mismatch in out]] (recur {in out} (rest culled))
+          [[:error msg]] (do (println (str "ERROR: " msg))
+                             (recur (oracle :examples) culled)))))))
 
 (defn training-oracle
-  "Return an I/O oracle given a training problem."
   [training-problem]
-  (fn []
-    (let [e (read-expression (:challenge training-problem))]
-      (into {} (for [l (rand-longs)]
-                 [l (run-program e l)])))))
+  (let [e (read-expression (:challenge training-problem))]
+    (fn [& args]
+      (match (vec args)
+        [:examples] (into {} (for [l (take 256 (rand-longs))]
+                               [l (run-program e l)]))
+        [:submit attempt] (do (println (str "ATTEMPT: " attempt))
+                              (if-let [[in out]
+                                       (->> (take 10000 (rand-longs))
+                                            (map (juxt identity #(run-program e %)))
+                                            (filter (fn [[in out]]
+                                                      (not= out (run-program attempt in))))
+                                            (first))]
+                                [:mismatch in out]
+                                [:win]))))))
 
-(defn unchecked-long
-  [bi]
-  (if (= (class bi) clojure.lang.BigInt)
-    (.longValue (.bipart bi))
-    (long bi)))
-
-(defn hexstr
-  "given a number, returns an 8-byte hex string of the form '0x0000000000000000'"
-  [n]
-  (let [unpadded-str (Long/toHexString n)
-        cnt (count unpadded-str)]
-    (str "0x"
-         (apply str (repeat (- 16 cnt) "0"))
-         (str/upper-case unpadded-str))))
-
-(defn rand-64-bit-hex []
+(defn rand-hex []
   (map hexstr (rand-longs)))
 
 (comment
@@ -141,31 +134,14 @@
      :operators ["if0" "not" "or" "plus" "xor"],
      :id "h7oZTxtwiD00OapNDtCAstRG"})
 
-  (let [e (read-expression "(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))",)]
-    (into {} (for [l (rand-longs)]
-               [l (run-program e l)])))
+  (let [small-problem
+        {:challenge "(lambda (x) (shr4 (shl1 x)))",
+         :size 3,
+         :operators ['shl1 'shr4],
+         :id "foo$to-the$bar"}]
+    (find-solution (generate-programs 2 '[shl1 shr4])
+                   (training-oracle small-problem)))
 
-  ;; TODO: this has been processed slightly:
-  ;; operators is normally a string-vector
-  (def small-problem
-    {:challenge "(lambda (x) (shr4 (shl1 x)))",
-     :size 3,
-     :operators ['shl1 'shr4],
-     :id "foo$to-the$bar"})
-
-  (find-solution (generate-programs
-                  (:size small-problem)
-                  (:operators small-problem))
-                 (training-oracle small-problem))
-
-  (unchecked-long 0xFFFFFFFFFFFFFFFF)
-
-  265 random longs
-  (rand-long Long/MAX_VALUE)
-
-
-  Long
-  (- (rand) 0.5)
 
   )
 
