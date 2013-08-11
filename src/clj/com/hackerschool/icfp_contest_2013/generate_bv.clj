@@ -119,11 +119,12 @@
 (defn generate-exprs
   "Generate all expressions with a certain size and op set."
   [progsize ops]
-  (if (<= progsize 1)
-    '[0 1 x]
-    (let [exprs (mapcat #(generate-exprs-with % progsize ops)
-                        (affordable-ops ops progsize))]
-      (concat exprs (generate-exprs (dec progsize) ops)))))
+  (let [ops (shuffle ops)]
+    (if (<= progsize 1)
+      '[0 1 x]
+      (let [exprs (mapcat #(generate-exprs-with % progsize ops)
+                          (affordable-ops ops progsize))]
+        (concat (generate-exprs (dec progsize) ops) exprs)))))
 
 (defn generate-programs
   "Generate all programs with a certain op set and less than size `progsize`"
@@ -133,7 +134,7 @@
        (generate-exprs (dec progsize) ops)))
 
 (comment
-  (take 10 (generate-programs 7 '[and not]))
+  (take 10 (generate-programs 8 '[plus xor]))
 
   ([lambda [x] [shl1 0]] [lambda [x] [shl1 1]] [lambda [x] [shl1 x]] [lambda [x] 0] [lambda [x] 1] [lambda [x] x])
 
