@@ -86,6 +86,12 @@
    [(== b 1) (== 0 out)]
    [(== b 0) (== 1 out)]))
 
+;; predicate that succeeds if b is a bit
+(defn bito [b]
+  (conde
+   [(== b 1)]
+   [(== b 0)]))
+
 (comment
   (run 1 [q]
        (bit-noto 0 q))
