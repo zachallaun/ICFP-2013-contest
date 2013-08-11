@@ -21,10 +21,14 @@
   ([route]
      (icfp-post route {}))
   ([route data]
-     (http/post (str icfp-url route)
-                {:query-params {:auth auth-key}
-                 :body (json/generate-string data)
-                 :as :json})))
+     (try
+       (http/post (str icfp-url route)
+                  {:query-params {:auth auth-key}
+                   :body (json/generate-string data)
+                   :as :json})
+       (catch Exception e
+         (Thread/sleep 1000)
+         (icfp-post route data)))))
 
 (defn icfp-get
   "Make a GET request to the contest server."
@@ -122,15 +126,32 @@
 
 (comment
 
+  (def unsolved? (complement :solved))
 
   (def problems
-    (map (fn [problem]
-           (update-in problem [:operators] #(map symbol %)))
-         (:body (myproblems-req))))
+    (->> (:body (myproblems-req))
+         (map (fn [problem]
+                (update-in problem [:operators] #(map symbol %))))
+         (filter (fn [{:keys [operators]}]
+                   (not (let [in-ops (set operators)]
+                          (or (in-ops 'fold)
+                              (in-ops 'tfold))))))
+         (filter unsolved?)
+         )) ;; we don't handle fold/tfold yet
 
-  (training-problem)
+  (defn size-n-problems
+    [n]
+    (filter #(= (:size %) n) problems))
 
-  (take 2 (filter #(< (:size %) 4) problems))
+  (def size-3-problems
+    (filter #(= (:size %) 3) problems))
+  (count size-3-problems)
+
+  (doseq [problem size-3-problems]
+    (println (str "RESULT: " (do-problem problem))))
+
+  (take 2 )
+
   ({:id "6QaBeiw9UA5f0Zkgc5fZQNOt", :size 3, :operators (shr1)} {:id "6RX515PBdDpEkRPGTjTTg6dU", :size 3, :operators (shr16)})
 
 
