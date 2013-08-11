@@ -49,3 +49,5 @@ WORKING ON: {:id "ScdXCm1naycUlAIVnXHDuBWK", :size 8, :operators (plus shl1 shr1
 WORKING ON: {:id "Gk7s4QYktPbigzWbOaejLUCJ", :size 8, :operators (plus shl1 shr16)}
 WORKING ON: {:id "DBEoYLcsmvyBVFmWBgFv5T6x", :size 8, :operators (not shl1 shr4 xor)}
 WORKING ON: {:id "3OdmUS8TBma49AMz5wDbzZzh", :size 8, :operators (not plus shl1 shr1)}
+WORKING ON: {:id "frZx7ZV64mmNFvBNvOl4beFx", :size 10, :operators (and if0 shl1 shr4)
+WORKING ON: {:id "4VDBwPOAnRmORhYBATbJMl4q", :size 11, :operators (and if0 shr1 shr16 xor)}

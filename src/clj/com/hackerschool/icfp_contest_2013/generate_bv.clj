@@ -18,6 +18,7 @@
                  |(lambda (x) e)| = 1 + |e|
 "
   [p]
+  {:post [(>= % 0)]}
   (match [p]
     [['lambda _ e]] (+ 1 (size e))
     [(:or 0 1)] 1
@@ -27,19 +28,13 @@
     [[op1 e]] (+ 1 (size e))
     [[op2 e0 e1]] (+ 1 (size e0) (size e1))))
 
-(def all-operators
-  "Every operator in the λBV language."
-  '[not shl1 shr1 shr4 shr16
-    plus and or xor
-    if0])
-
 (defn eliminate-dead-code
   [expr]
   (match [expr]
 
          [['lambda [x] body]] ['lambda [x] (eliminate-dead-code body)]
 
-         [[(:or 'shr1 'shr4 'shr16) 0]] 0
+         [[(:or 'shr1 'shr4 'shr16 'shl1) 0]] 0
 
          [['plus e1 0]] (eliminate-dead-code e1)
          [['plus 0 e1]] (eliminate-dead-code e1)
@@ -78,9 +73,9 @@
 
          ;; Note: Special-casing plus because constant folding it could
          ;; introduce the illegal constant 2.
-         [['plus e1 e2]] expr
+         [['plus e1 e2]] ['plus (constant-fold e1) (constant-fold e2)]
 
-         [[unop e1]] expr
+         [[unop e1]] [unop (constant-fold e1)]
 
          [[binop e1 e2]] (let [e1' (constant-fold e1)
                                e2' (constant-fold e2)]

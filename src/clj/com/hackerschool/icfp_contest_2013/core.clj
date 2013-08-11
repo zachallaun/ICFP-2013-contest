@@ -28,8 +28,11 @@
                    :body (json/generate-string data)
                    :as :json})
        (catch Exception e
-         (Thread/sleep 1000)
-         (icfp-post route data)))))
+         (case (:status (:object (.data e)))
+           (412 410) (println "  GONE")
+           429 (do (Thread/sleep 1000)
+                   (icfp-post route data))
+           (println "Don't know what happened"))))))
 
 (defn icfp-get
   "Make a GET request to the contest server."
@@ -95,7 +98,7 @@
   [id]
   (fn [& args]
     (match (vec args)
-      [:examples] (let [ins (take 256 (rand-longs))
+      [:examples] (let [ins (concat [0 -1] (take 254 (rand-longs)))
                         resp (eval-req id (map hexstr ins))]
                     (when (= (resp :status) "ok")
                       (zipmap ins (map (comp unchecked-long read-string)
@@ -106,9 +109,11 @@
                             [{:status "win"}] [:win]
                             [{:status "error" :message msg}] [:error msg]
                             [{:status "mismatch" :values vals}]
+                            (do
+                              (println "  WRONG: " attempt)
                               (let [[in out] (map (comp unchecked-long read-string) vals)]
-                                (println "DISTINGUISHING INPUT: " in " => " out)
-                                [:mismatch in out]))))))
+                                (println "  DISTINGUISHING INPUT: " in " => " out)
+                                [:mismatch in out])))))))
 
 ;; (match [result]
 ;;   [[:win]] attempt
@@ -123,7 +128,7 @@
   (println (str "WORKING ON: " problem))
   (let [solution (find-solution (generate-programs size operators)
                                 (icfp-oracle id))]
-    (println (str "RESULT: " solution))
+    (println (str "  RESULT: " solution))
     solution))
 
 (defn solvable?
@@ -147,6 +152,11 @@
       (fail!))))
 
 (comment
+
+  (try
+    (http/get "http://google.com/foobar")
+    (catch Exception e
+      (:status (:object (.data e)))))
 
   (def problems
     (->> (:body (myproblems-req))
