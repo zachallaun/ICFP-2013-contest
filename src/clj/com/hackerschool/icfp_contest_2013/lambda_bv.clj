@@ -167,33 +167,67 @@
 
 ;; todo: "and" | "or" | "xor" | "plus"
 
-(defn bitvector-ando
-  "Relational bitwise-and."
-  [bv1 bv2 out]
-  (fresh [result fst1 fst2 rst1 rst2 tmp]
-         (conso fst1 rst1 bv1)
-         (conso fst2 rst2 bv2)
-         (conde
-          [(emptyo rst1) (== `(~(and fst1 fst2)) out)]
-          [(== fst1 0) (== 0 result) (conso result tmp out) (bitvector-ando rst1 rst2 tmp)]
-          [(== fst2 0) (== 0 result) (conso result tmp out) (bitvector-ando rst1 rst2 tmp)]
-          [(== result 1) (conso result tmp out) (bitvector-ando rst1 rst2 tmp)])))
+;; (defn bitvector-ando
+;;   "Relational bitwise-and."
+;;   [bv1 bv2 out]
+;;   (fresh [result fst1 fst2 rst1 rst2 tmp]
+;;          (conso fst1 rst1 bv1)
+;;          (conso fst2 rst2 bv2)
+;;          (conde
+;;           [(emptyo rst1) (== `(~(and fst1 fst2)) out)]
+;;           [(== fst1 0) (== 0 result) (conso result tmp out) (bitvector-ando rst1 rst2 tmp)]
+;;           [(== fst2 0) (== 0 result) (conso result tmp out) (bitvector-ando rst1 rst2 tmp)]
+;;           [(== result 1) (conso result tmp out) (bitvector-ando rst1 rst2 tmp)])))
+
+(defn bit-ando-res
+  "Like bit-ando, but actually returns the result instead of succeeding or failing."
+  [b1 b2 out]
+  (conde
+   [(== b1 1) (== b2 1) (== 1 out)]
+   [(conde
+     [(== b1 0)]
+     [(== b2 0)]) (== 0 out)]))
  
+(defn bitvector-ando
+  "Relational bitwise-and.  Expects two bitvectors of the same length."
+  [bv1 bv2 out]
+  (conde
+   [(emptyo bv1) (emptyo bv2) (== [] out)]
+   [(fresh [fst1 rst1 fst2 rst2 fstout rstout]
+      (conso fst1 rst1 bv1)
+      (bito fst1)
+      (conso fst2 rst2 bv2)
+      (bito fst2)
+      (bit-ando-res fst1 fst2 fstout)
+      (conso fstout rstout out)
+      (bito fstout)
+      (bitvector-ando rst1 rst2 rstout))]))
 
 (comment
-  
-  (run 1 [q]
-       (bit-ando [1 1] q))
 
-  (run 1 [q]
-   (bitvector-ando [1 1 0 1] [1 1 0 0] q))
+  (run 1 [q] (bit-ando-res 1 1 q))
+  (run 1 [q] (bit-ando-res 1 0 q))
+  (run 1 [q] (bit-ando-res 0 1 q))
+  (run 1 [q] (bit-ando-res 0 0 q))
 
+  (run 1 [q] (bit-ando-res q 0 1))
+  (run 1 [q] (bit-ando-res q 1 1))
 
+  (run 1 [q] (bitvector-ando [0 0 1] [1 1 1] q))
 
-  
+  (run 1 [q] (bitvector-ando [1 1 1] [1 1 1] q))
+
+  (run* [q] (bitvector-ando q [1 0 1] [1 0 1]))
+
+  (run 1 [q] (bitvector-ando [0 0 1] [1 1 1] q))
+
+  (run 1 [q] (bitvector-ando [] [] q))
+
+  (run 1 [q] (bitvector-ando q [1 0 0 1 1] [1 0 0 1 1]))
+
+  (run* [q] (bitvector-ando q [1 0 0 1 1] [1 0 0 1 1]))
 
 )
-
 
 
 
