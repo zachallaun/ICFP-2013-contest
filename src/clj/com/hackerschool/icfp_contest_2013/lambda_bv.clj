@@ -170,18 +170,26 @@
 (defn bitvector-ando
   "Relational bitwise-and."
   [bv1 bv2 out]
-  (fresh [result fst1 fst2 rst1 rst2]
+  (fresh [result fst1 fst2 rst1 rst2 tmp]
          (conso fst1 rst1 bv1)
          (conso fst2 rst2 bv2)
          (conde
-          [(== fst1 0) (== 0 result) (conso result (bitvector-ando rst1 rst2) out)]
-          [(== fst2 0) (== 0 result) (conso result (bitvector-ando rst1 rst2) out)]
-          [(== result 1) (conso result (bitvector-ando rst1 rst2) out)])))
+          [(emptyo rst1) (== `(~(and fst1 fst2)) out)]
+          [(== fst1 0) (== 0 result) (conso result tmp out) (bitvector-ando rst1 rst2 tmp)]
+          [(== fst2 0) (== 0 result) (conso result tmp out) (bitvector-ando rst1 rst2 tmp)]
+          [(== result 1) (conso result tmp out) (bitvector-ando rst1 rst2 tmp)])))
  
 
 (comment
   
-  (bitvector-ando [1 1 0] [0 1 1] q)
+  (run 1 [q]
+       (bit-ando [1 1] q))
+
+  (run 1 [q]
+   (bitvector-ando [1 1 0 1] [1 1 0 0] q))
+
+
+
   
 
 )
