@@ -33,63 +33,109 @@
     plus and or xor
     if0])
 
-(def min-size
-  {'not 2 'shl1 2 'shr1 2 'shr4 2 'shr16 2
-   'plus 3 'and 3 'or 3 'xor 3
-   'if0 4
-   'fold 5})
-
 ;; (op2 (op1 1) (op1 0)) ;; 4 left
 
 ;; (for [e0 (gen-exprs 3 ops)
 ;;       e1 (gen-exprs (- coutner (size e0)) ops)]
 ;;   [op2 e0 e1])
 
-(defn generate-expressions-with
-  "Generate all expressions possible from an operator and a set of expressions."
-  [operator expressions]
-  (case operator
-    (shl1 shr1 shr4 shr16 not) (for [expr expressions]
-                                 [operator expr])
-    (plus and or xor) (for [expr1 expressions
-                            expr2 expressions]
-                        [operator expr1 expr2])
-    (if0) (for [expr1 expressions
-                expr2 expressions
-                expr3 expressions]
-            [operator expr1 expr2 expr3])))
+;; (defn generate-expressions-with
+;;   "Generate all expressions possible from an operator and a set of expressions."
+;;   [operator expressions]
+;;   (case operator
+;;     (shl1 shr1 shr4 shr16 not) (for [expr expressions]
+;;                                  [operator expr])
+;;     (plus and or xor) (for [expr1 expressions
+;;                             expr2 expressions]
+;;                         [operator expr1 expr2])
+;;     (if0) (for [expr1 expressions
+;;                 expr2 expressions
+;;                 expr3 expressions]
+;;             [operator expr1 expr2 expr3])))
 
-(defn generate-expressions'
-  "Generate all expressions as above; accumulate in expressions."
-  [opsize depth operators expressions]
-  (if (= depth 0)
-    expressions
-    (let [new-expressions
-          (mapcat (fn [op]
-                    (generate-expressions-with op expressions))
-                  operators)]
-      (generate-expressions'
-       opsize
-       (dec depth)
-       operators
-       (concat (filter #(>= opsize (size %))
-                       new-expressions)
-               expressions)))))
+;; (defn generate-expressions'
+;;   "Generate all expressions as above; accumulate in expressions."
+;;   [opsize depth operators expressions]
+;;   (if (= depth 0)
+;;     expressions
+;;     (let [new-expressions
+;;           (mapcat (fn [op]
+;;                     (generate-expressions-with op expressions))
+;;                   operators)]
+;;       (generate-expressions'
+;;        opsize
+;;        (dec depth)
+;;        operators
+;;        (concat (filter #(>= opsize (size %))
+;;                        new-expressions)
+;;                expressions)))))
 
-(defn generate-expressions
-  "Generate all expressions with a specified depth and operator set."
-  [opsize depth operators]
-  (generate-expressions' opsize depth operators '[0 1 x]))
+;; (defn generate-expressions
+;;   "Generate all expressions with a specified depth and operator set."
+;;   [opsize depth operators]
+;;   (generate-expressions' opsize depth operators '[0 1 x]))
+
+;; (defn generate-programs
+;;   "Generate all programs with a specified depth and operator set."
+;;   [opsize depth operators]
+;;   (map (fn [expr]
+;;          ['lambda ['x] expr])
+;;        (generate-expressions opsize depth operators)))
+
+(def min-size
+  {'not 2 'shl1 2 'shr1 2 'shr4 2 'shr16 2
+   'plus 3 'and 3 'or 3 'xor 3
+   'if0 4
+   'fold 5})
+
+(defn affordable-ops
+  "Returns a subset of `ops` that could be used in expressions <= progsize"
+  [ops progsize]
+  (filter (fn [op]
+            (<= (min-size op) progsize))
+          ops))
+
+(declare generate-exprs)
+
+(defn generate-exprs-with
+  "Generate all expressions using op less than size `progsize`"
+  [op progsize ops]
+  (case op
+    (not shl1 shr1 shr4 shr16)
+    (for [e0 (generate-exprs (dec progsize) ops)]
+      [op e0])
+
+    (plus and or xor)
+    (for [e0 (generate-exprs (dec progsize) ops)
+          e1 (generate-exprs (- progsize 1 (size e0)) ops)]
+      [op e0 e1])
+
+    (if0)
+    (for [e0 (generate-exprs (dec progsize) ops)
+          e1 (generate-exprs (- progsize 1 (size e0)) ops)
+          e2 (generate-exprs (- progsize 1 (size e1)) ops)]
+      [op e0 e1 e2])))
+
+(defn generate-exprs
+  "Generate all expressions with a certain size and op set."
+  [progsize ops]
+  (if (<= progsize 1)
+    '[0 1 x]
+    (let [exprs (mapcat #(generate-exprs-with % progsize ops)
+                        (affordable-ops ops progsize))]
+      (concat exprs (generate-exprs (dec progsize) ops)))))
 
 (defn generate-programs
-  "Generate all programs with a specified depth and operator set."
-  [opsize depth operators]
+  "Generate all programs with a certain op set and less than size `progsize`"
+  [progsize ops]
   (map (fn [expr]
          ['lambda ['x] expr])
-       (generate-expressions opsize depth operators)))
+       (generate-exprs (dec progsize) ops)))
 
 (comment
-  (generate-programs 3 3 '[shl1])
+  (take 10 (generate-programs 7 '[and not]))
+
+  ([lambda [x] [shl1 0]] [lambda [x] [shl1 1]] [lambda [x] [shl1 x]] [lambda [x] 0] [lambda [x] 1] [lambda [x] x])
 
 
   (take 5 (generate-programs 10 '[and if0 shr4 xor]))
@@ -177,6 +223,9 @@
          :id "foo$to-the$bar"}]
     (find-solution (generate-programs 2 '[shl1 shr4])
                    (training-oracle small-problem)))
+
+  (count (generate-programs 7 5 '[and shr16]))
+
 
 
   )
