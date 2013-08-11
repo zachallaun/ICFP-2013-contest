@@ -57,8 +57,9 @@
 
 (defn uniono [x y out]
   (conde
-   ;; if y is an empty set, then x is the union of x and y.
+    ;; if y is an empty set, then x is the union of x and y.
     [(emptyo y) (== x out)]
+    [(emptyo x) (== y out)]
 
     ;; otherwise, y is a pair of a and d.
     [(fresh [a d]
@@ -122,7 +123,7 @@
 
     ;; fold
     [(fresh [e0 e1 e2 id]
-       (== p ['fold e0 e1 (['lambda (id) e2])])
+       (== p ['fold e0 e1 [['lambda [id] e2]]])
        (fresh [res0 res1 res2]
          (operatorso e0 res0)
          (operatorso e1 res1)
@@ -140,9 +141,9 @@
         [(== op 'shr1)]
         [(== op 'shr4)]
         [(== op 'shr16)])
-       (operatorso e0 ops)
+       (operatorso e0 res)
        ;; TODO: don't know if this syntax for listifying op is OK
-       (uniono `(~op) ops))]
+       (uniono [op] res ops))]
 
     ;; binary ops
     [(fresh [op e0 e1]
@@ -158,7 +159,7 @@
          ;; make sure that op is part of ops
          (uniono res0 res1 res2)
          ;; am I allowed to turn op into a list this way?
-         (uniono res2 `(~op) ops)))]
+         (uniono res2 [op] ops)))]
 ))
 
 (comment
@@ -170,7 +171,7 @@
 
   (run 4 [q]
        (fresh [v]
-              (membero q `[~v a])))
+         (membero q [v 'a])))
 
   ;; Trying to generate some expressions that have no operators
   (run 10 [q]
@@ -184,7 +185,7 @@
 
   ;; todo: this is busted and I don't know why!
   (run 5 [q]
-       (operatorso q '(plus)))
+       (operatorso q ['plus]))
 
   (run 1 [q]
        (fresh [tmp]
@@ -257,7 +258,7 @@ Op (fold e0 e1 (lambda (x y) e2)) = {'fold'} U Op e0 U Op e1 U Op e2
     fail)
 
   (run* [program]
-    (operatorso program '('if0 'shl1))
+    (operatorso program [if0 shl1])
     (sizeo program 5)
     (runo program input out))
 

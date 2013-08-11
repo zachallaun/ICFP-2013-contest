@@ -1,10 +1,7 @@
 (ns com.hackerschool.icfp-contest-2013.t-program-gen
   (:require [midje.sweet :refer :all]
-            [com.hackerschool.icfp-contest-2013.program-gen :refer :all])
-
-  ;; Why do I need this?  Shouldn't it be already included from the above?
-  (:refer-clojure :exclude [==])
-  (:require [clojure.core.logic :refer [run]]))
+            [com.hackerschool.icfp-contest-2013.program-gen :refer :all]
+            [clojure.core.logic :refer [run]]))
 
 (def program-examples
   "Vector of known valid [program size opset] triples."
@@ -25,6 +22,6 @@
 
 ;; FIXME: produces "clojure.lang.ArityException: Wrong number of args
 ;; (0) passed to: PersistentVector"
-;; (facts "about core.logic runs"
-;;   (fact "1"
-;;     (run 5 [q] (uniono [1 2 3] [3] q)) => ([1 2 3])))
+(facts "about core.logic runs"
+  (fact "1"
+    (run 5 [q] (uniono [1 2 3] [3] q)) => '([1 2 3])))
