@@ -108,6 +108,19 @@
                              (recur (oracle :examples) culled)))))))
 
 (defn training-oracle
+  "Returns a function that can do two things:
+
+   * if passed `:examples`, returns a dictionary of input-output
+     examples.
+
+   * if passed `:submit` and a guessed program, returns one of:
+
+      * `[:win]`, if the guess is correct;
+
+      * `[:mismatch in out]`, where `in` and `out` are a counterexample
+        input and output, if the guess was incorrect;
+
+      * `[:error msg]`, if something went wrong."
   [training-problem]
   (let [e (read-expression (:challenge training-problem))]
     (fn [& args]
