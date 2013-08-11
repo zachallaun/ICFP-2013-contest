@@ -54,7 +54,7 @@
               [(['and e1 e2] :seq)] (bit-and (run-body e1 env) (run-body e2 env))
               [(['or e1 e2] :seq)]  (bit-or (run-body e1 env) (run-body e2 env))
               [(['xor e1 e2] :seq)] (bit-xor (run-body e1 env) (run-body e2 env))
-              [(['plus e1 e2] :seq)] (+ (run-body e1 env) (run-body e2 env))
+              [(['plus e1 e2] :seq)] (unchecked-add ^long (run-body e1 env) ^long (run-body e2 env))
 
               ;;if0
               [(['if0 e0 e1 e2] :seq)]
@@ -145,7 +145,7 @@
 (defn bitvector-shr4o [bv out]
   (fresh [b1 b2 b3 b4 middlebits bn3 bn2 bn1 bn]
      (== [b1 b2 b3 b4 middlebits] bv)
-     
+
      ;; ensure that all the bits are bits!
      (bito b1) (bito b2) (bito b3) (bito b4)
      (bito bn3) (bito bn2) (bito bn1) (bito bn)
@@ -162,9 +162,9 @@
   (run 1 [q] (bitvector-shr4o [1 1 1 1 1 1 1 1] q))
 
 )
-     
-     
-     
+
+
+
 
 (defn run-bodyo [e env out]
   (conde
@@ -182,7 +182,7 @@
     ))
 
 
-         
+
 
 
 

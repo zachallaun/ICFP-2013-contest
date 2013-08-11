@@ -72,9 +72,7 @@
       (str/replace ")" "]")
       read-string))
 
-(let [e (read-expression "(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))",)]
-  (into {} (for [l (rand-longs)]
-             [l (run-program e l)])))
+
 
 (comment
   (def test
@@ -82,6 +80,14 @@
      :size 18,
      :operators ['if0' 'not' 'or' 'plus' 'xor'],
      :id 'h7oZTxtwiD00OapNDtCAstRG'})
+
+  (let [e (read-expression "(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))",)]
+    (into {} (for [l (rand-longs)]
+               [l (run-program e l)])))
+
+
+  (unchecked-add 0x7FFFFFFFFFFFFFFF 1)
+  -9223372036854775808
 
   265 random longs
   (rand-long Long/MAX_VALUE)

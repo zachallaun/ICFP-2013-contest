@@ -69,4 +69,7 @@
     (run-program '(lambda (x) (if0 x
                         (plus x 1)
                         (shl1 x)))
-      1) => 2))
+      1) => 2)
+
+  (fact "unchecked math"
+    (run-program '(lambda (x) (plus 1 x)) 0x7FFFFFFFFFFFFFFF) => -0x8000000000000000))
