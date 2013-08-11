@@ -72,25 +72,24 @@
      (fresh [e0 e1 e2]
        (== p ['if0 e0 e1 e2])
        (fresh [res0 res1 res2]
-         (operatorso e0 res0)
-         (operatorso e1 res1)
-         (operatorso e2 res2)
          (fresh [tmp1]
            (uniono res0 res1 tmp1)
-           (uniono res2 tmp1 ops))))]
+           (uniono res2 tmp1 ops))
+         (operatorso e0 res0)
+         (operatorso e1 res1)
+         (operatorso e2 res2)))]
 
     ;; fold
     ;; TODO: tfold (top-level fold)
     [(membero 'fold ops)
      (fresh [e0 e1 e2 id]
        (== p ['fold e0 e1 ['lambda [id] e2]])
-       (fresh [res0 res1 res2]
+       (fresh [res0 res1 res2 tmp]
+         (uniono res0 res1 tmp)
+         (uniono res2 tmp ops)
          (operatorso e0 res0)
          (operatorso e1 res1)
-         (operatorso e2 res2)
-         (fresh [tmp]
-           (uniono res0 res1 tmp)
-           (uniono res2 tmp ops))))]
+         (operatorso e2 res2)))]
 
     ;; unary ops
     [(fresh [op e0 res]
@@ -106,9 +105,8 @@
           (membero 'shr4 ops)]
          [(== op 'shr16)
           (membero 'shr16 ops)])
-       (operatorso e0 res)
-       ;; TODO: don't know if this syntax for listifying op is OK
-       (uniono [op] res ops))]
+       (uniono [op] res ops)
+       (operatorso e0 res))]
 
     ;; binary ops
     [(fresh [op e0 e1]
@@ -122,13 +120,12 @@
           (membero 'xor ops)]
          [(== op 'plus)
           (membero 'plus ops)])
-       (fresh [res0 res1 res2 ]
-         (operatorso e0 res0)
-         (operatorso e1 res1)
+       (fresh [res0 res1 res2]
          ;; make sure that op is part of ops
          (uniono res0 res1 res2)
-         ;; am I allowed to turn op into a list this way?
-         (uniono res2 [op] ops)))]))
+         (uniono res2 [op] ops)
+         (operatorso e0 res0)
+         (operatorso e1 res1)))]))
 
 (comment
   ;; example: generate 10 expressions containing plus and xor
