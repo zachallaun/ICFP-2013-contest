@@ -184,9 +184,9 @@
   [b1 b2 out]
   (conde
    [(== b1 1) (== b2 1) (== 1 out)]
-   [(conde
-     [(== b1 0)]
-     [(== b2 0)]) (== 0 out)]))
+   [(== b1 0) (== b2 1) (== 0 out)]
+   [(== b1 1) (== b2 0) (== 0 out)]
+   [(== b1 0) (== b2 0) (== 0 out)]))
  
 (defn bitvector-ando
   "Relational bitwise-and.  Expects two bitvectors of the same length."
