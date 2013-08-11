@@ -204,9 +204,9 @@ Op (fold e0 e1 (lambda (x y) e2)) = {'fold'} U Op e0 U Op e1 U Op e2
     [(fresh [e0 e1 e2]
        (== p ['if0 e0 e1 e2])
        (fresh [res0 res1 res2 tmp1 tmp2]
-         (conso res0 res1 tmp1)
-         (conso tmp1 res2 tmp2)
-         (conso tmp2 'a out)
+         (appendo res0 res1 tmp1)
+         (appendo tmp1 res2 tmp2)
+         (appendo ['a] tmp2 out)
          (sizeo e0 res0)
          (sizeo e1 res1)
          (sizeo e2 res2)))]
@@ -215,10 +215,10 @@ Op (fold e0 e1 (lambda (x y) e2)) = {'fold'} U Op e0 U Op e1 U Op e2
     [(fresh [e0 e1 e2 id]
        (== p ['fold e0 e1 ['lambda [id] e2]])
        (fresh [res0 res1 res2 tmp1 tmp2 tmp3]
-         (conso res0 res1 tmp1)
-         (conso tmp1 res2 tmp2)
-         (conso tmp2 'a tmp3)
-         (conso tmp3 'a out)
+         (appendo res0 res1 tmp1)
+         (appendo tmp1 res2 tmp2)
+         (appendo ['a] tmp2 tmp3)
+         (appendo ['a] tmp3 out)
          (sizeo e0 res0)
          (sizeo e1 res1)
          (sizeo e2 res2)))]
@@ -232,7 +232,7 @@ Op (fold e0 e1 (lambda (x y) e2)) = {'fold'} U Op e0 U Op e1 U Op e2
         [(== op 'shr1)]
         [(== op 'shr4)]
         [(== op 'shr16)])
-       (conso 'a res out)
+       (appendo ['a] res out)
        (sizeo e0 res))]
 
     ;; binary ops
@@ -245,8 +245,8 @@ Op (fold e0 e1 (lambda (x y) e2)) = {'fold'} U Op e0 U Op e1 U Op e2
         [(== op 'plus)])
        (fresh [res0 res1 tmp]
          ;; make sure that op is part of ops
-         (conso res0 res1 tmp)
-         (conso tmp 'a out)
+         (appendo res0 res1 tmp)
+         (appendo ['a] tmp out)
          (sizeo e0 res0)
          (sizeo e1 res1)))]))
 
@@ -263,32 +263,38 @@ Op (fold e0 e1 (lambda (x y) e2)) = {'fold'} U Op e0 U Op e1 U Op e2
 
   (run 3 [q] (sizeo '[not 1] q))
 
+  (run 1 [q] (sizeo '[and 0 1] q))
+
+  (run 1 [q] (sizeo '[and [and 0 1] 0] q))
+
+  (run 1 [q] (sizeo '[if0 0 0 0] q))
+
   (run 4 [q] (sizeo q '[a a a a]))
 
   (run 4 [q] (sizeo q (make-size 4)))
+
+  (run 5 [q] (sizeo q (make-size 5)) (operatorso q ['and]))
 
   (run* [q] (sizeo q (make-size 2)))
 
   (run* [q] (sizeo q (make-size 3)))
 
-)
+  (run 1 [program]
+    (sizeo program (make-size 6))
+    (operatorso program '[not]))
 
-  
+  ;; Sigh.  This one happens to work, but it diverges arbitrarily
+  ;; depending on the operators we pick.
+  (run 1 [program]
+    (sizeo program (make-size 6))
 
-(comment
+    ;; An attempt to make sure the order of operatorso's ops result
+    ;; doesn't matter.  Don't know if it really helps.
+    (fresh [ops]
+      (operatorso program ops)
+      (uniono ops '[if0 and] '[if0 and])))
 
-  (defn anyo [g]
-    (conde
-      [g]
-      [(anyo g)]))
-
-  (defn nevero []
-    (anyo (== true false)))
-
-  (run 1 [q]
-    (nevero)
-    fail)
-
+  ;; An example of what we wish we could do...
   (run* [program]
     (operatorso program [if0 shl1])
     (sizeo program 5)
