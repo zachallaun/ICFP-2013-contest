@@ -18,10 +18,10 @@
 
 (defn training-problem
   "Get a training problem from the contest server; returns something like:
-{:challenge '(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))',
- :size 18,
- :operators ['if0' 'not' 'or' 'plus' 'xor'],
- :id 'h7oZTxtwiD00OapNDtCAstRG'}"
+ {:challenge '(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))',
+  :size 18,
+  :operators ['if0' 'not' 'or' 'plus' 'xor'],
+  :id 'h7oZTxtwiD00OapNDtCAstRG'}"
   []
   (-> (:body (icfp-get "train"))
       (select-keys [:id :size :operators :challenge])))

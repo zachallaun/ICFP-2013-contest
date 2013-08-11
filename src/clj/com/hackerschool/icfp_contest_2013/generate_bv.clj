@@ -1,4 +1,8 @@
-(ns com.hackerschool.icfp-contest-2013.generate-bv)
+(ns com.hackerschool.icfp-contest-2013.generate-bv
+  (:require [clojure.string :as str]
+            [com.hackerschool.icfp-contest-2013.lambda-bv :refer [run-program]]))
+
+;;TODO: memoize fns for speed.
 
 (def all-operators
   "Every operator in the λBV language."
@@ -49,4 +53,43 @@
 (comment
   (generate-programs 1 '[and shl1 shr4 xor or])
   (take 50 (generate-programs 10 '[and if0 shr4 xor]))
-)
+
+  generate all programs with opset
+  test against input/output pairs
+  submit first program that passes
+
+
+  )
+
+
+(defn rand-longs []
+  ;;TODO properly sample from full space of 64 bit vectors
+  (repeatedly 256 #(long (* (rand) Long/MAX_VALUE))))
+
+(defn read-expression [s]
+  (-> s
+      (str/replace "(" "[")
+      (str/replace ")" "]")
+      read-string))
+
+(let [e (read-expression "(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))",)]
+  (into {} (for [l (rand-longs)]
+             [l (run-program e l)])))
+
+(comment
+  (def test
+    {:challenge "(lambda (x_23265) (plus (or (or (or (if0 (plus (xor (not x_23265) 0) 0) x_23265 x_23265) x_23265) x_23265) x_23265) x_23265))",
+     :size 18,
+     :operators ['if0' 'not' 'or' 'plus' 'xor'],
+     :id 'h7oZTxtwiD00OapNDtCAstRG'})
+
+  265 random longs
+  (rand-long Long/MAX_VALUE)
+
+
+
+  Long
+  (- (rand) 0.5)
+
+
+  )
