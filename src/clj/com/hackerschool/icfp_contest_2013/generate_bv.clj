@@ -90,7 +90,7 @@
                                and  (bit-and e1' e2')
                                xor  (bit-xor e1' e2')
                                or   (bit-or e1' e2'))
-                             [binop e1 e2]))
+                             [binop e1' e2']))
 
          [['if0 e0 e1 e2]] (let [e0' (constant-fold e0)
                                  e1' (constant-fold e1)
@@ -187,15 +187,16 @@
 (defn find-solution
   [candidates oracle]
   (loop [examples (oracle :examples)
-         culled (filter #(correct-program? % examples) candidates)]
-    (when-let [attempt (first culled)]
-      (let [result (oracle :submit attempt)]
-        (match [result]
-          [[:win]] attempt
-          [[:mismatch in out]] (recur (merge {in out} (oracle :examples))
-                                      (rest culled))
-          [[:error msg]] (do (println (str "ERROR: " msg))
-                             (recur (oracle :examples) culled)))))))
+         candidates candidates]
+    (let [culled (filter #(correct-program? % examples) candidates)]
+      (when-let [attempt (first culled)]
+        (let [result (oracle :submit attempt)]
+          (match [result]
+            [[:win]] attempt
+            [[:mismatch in out]] (recur {in out}
+                                        (rest culled))
+            [[:error msg]] (do (println (str "ERROR: " msg))
+                               (recur (oracle :examples) culled))))))))
 
 (defn training-oracle
   "Returns a function that can do two things:

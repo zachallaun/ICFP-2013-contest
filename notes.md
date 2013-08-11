@@ -42,3 +42,10 @@ WARNING: most significant bits on the right
 ### 64 bit numbers
 
 All Clojure integer literals are java.lang.Longs, which are 64 bits _signed_. The spec wants unsigned numbers, so we may have to convert some of the outputs given by the server to their signed variants.
+
+### Fails
+
+WORKING ON: {:id "ScdXCm1naycUlAIVnXHDuBWK", :size 8, :operators (plus shl1 shr16)}
+WORKING ON: {:id "Gk7s4QYktPbigzWbOaejLUCJ", :size 8, :operators (plus shl1 shr16)}
+WORKING ON: {:id "DBEoYLcsmvyBVFmWBgFv5T6x", :size 8, :operators (not shl1 shr4 xor)}
+WORKING ON: {:id "3OdmUS8TBma49AMz5wDbzZzh", :size 8, :operators (not plus shl1 shr1)}

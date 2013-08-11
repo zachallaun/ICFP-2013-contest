@@ -107,6 +107,7 @@
                             [{:status "error" :message msg}] [:error msg]
                             [{:status "mismatch" :values vals}]
                               (let [[in out] (map (comp unchecked-long read-string) vals)]
+                                (println "DISTINGUISHING INPUT: " in " => " out)
                                 [:mismatch in out]))))))
 
 ;; (match [result]
@@ -134,59 +135,64 @@
   (filter #(= (:size %) n) problems))
 
 (defn win! []
-  (sh "espeak" "win"))
+  (sh "say" "-v" "Good News" "win"))
+
+(defn fail! []
+  (sh "say" "-v" "Bad News" "fail"))
 
 (defn do-problems [problems]
   (doseq [problem problems]
-    (when-let [res (do-problem problem)]
-      (win!))))
+    (if (do-problem problem)
+      (win!)
+      (fail!))))
 
-  (comment
+(comment
 
-    (def problems
-      (->> (:body (myproblems-req))
-           (map (fn [problem]
-                  (update-in problem [:operators] #(map symbol %))))
-           (filter (fn [{:keys [operators]}]
-                     (not (let [in-ops (set operators)]
-                            (or (in-ops 'fold)
-                                (in-ops 'tfold)))))) ;; we don't handle fold/tfold yet
-           (filter solvable?)))
+  (def problems
+    (->> (:body (myproblems-req))
+         (map (fn [problem]
+                (update-in problem [:operators] #(map symbol %))))
+         (filter (fn [{:keys [operators]}]
+                   (not (let [in-ops (set operators)]
+                          (or (in-ops 'fold)
+                              (in-ops 'tfold)))))) ;; we don't handle fold/tfold yet
+         (filter solvable?)))
 
-    (def only-unary-operators-problems
-      (filter
-       (fn [p]
-         (set/subset? (set (:operators p)) (set '[not shl1 shr1 shr4 shr16])))
-       problems))
+  (def only-unary-operators-problems
+    (filter
+     (fn [p]
+       (set/subset? (set (:operators p)) (set '[not shl1 shr1 shr4 shr16])))
+     problems))
 
-    (defn n-operator-problems
-      [n]
-      (filter (fn [p] (= (count (:operators p)) n)) problems))
+  (defn n-operator-problems
+    [n]
+    (filter (fn [p] (= (count (:operators p)) n)) problems))
 
-    (def two-operator-problems (n-operator-problems 2))
+  (def two-operator-problems (n-operator-problems 2))
 
-    (def single-unary-operator-problems
-      (filter (fn [p]
-                (== (count (:operators p)) 1))
-              problems))
+  (def single-unary-operator-problems
+    (filter (fn [p]
+              (== (count (:operators p)) 1))
+            problems))
 
-    (def size-3-problems
-      (filter #(= (:size %) 3) problems))
-    (count size-3-problems)
-
-
-
-    (doseq [problem (size-n-problems 6)]
-      (when-let [res (do-problem problem)]
-        (println (str "RESULT: " res))
-        (win!)))
-
-    (take 2 )
-
-    ({:id "6QaBeiw9UA5f0Zkgc5fZQNOt", :size 3, :operators (shr1)} {:id "6RX515PBdDpEkRPGTjTTg6dU", :size 3, :operators (shr16)})
+  (def size-3-problems
+    (filter #(= (:size %) 3) problems))
+  (count size-3-problems)
 
 
 
-    (sh "open spotify:track:0k1xMUwn9sb7bZiqdT9ygx")
+  (doseq [problem (size-n-problems 6)]
+    (if-let [res (do-problem problem)]
+      (do (println (str "RESULT: " res))
+          (win!))
+      (fail!)))
 
-    )
+  (take 2 )
+
+  ({:id "6QaBeiw9UA5f0Zkgc5fZQNOt", :size 3, :operators (shr1)} {:id "6RX515PBdDpEkRPGTjTTg6dU", :size 3, :operators (shr16)})
+
+
+
+  (sh "open spotify:track:0k1xMUwn9sb7bZiqdT9ygx")
+
+  )
