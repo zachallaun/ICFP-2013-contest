@@ -5,7 +5,8 @@
             [clojure.core.match :refer [match]]
             [clojure.string :as str]
             [com.hackerschool.icfp-contest-2013.generate-bv :refer [rand-longs find-solution generate-programs]]
-            [clojure.java.shell :refer [sh]]))
+            [clojure.java.shell :refer [sh]]
+            [clojure.set :as set]))
 
 (def icfp-url
   "http://icfpc2013.cloudapp.net/")
@@ -114,15 +115,15 @@
 ;;   [[:error msg]] (do (println (str "ERROR: " msg))
 ;;                      (recur (oracle :examples) culled)))
 
-(def size->stupid-size
-  {3 1, 4 2, 5 3, 6 4})
-
 (defn do-problem
   "Given a problem from the icfp site, generate all possible solutions
    and try to find a solution using the icfp-oracle. Does all the things."
-  [{:keys [id operators size]}]
-  (find-solution (generate-programs size (size->stupid-size size) operators)
-                 (icfp-oracle id)))
+  [{:keys [id operators size] :as problem}]
+  (println (str "WORKING ON: " problem))
+  (let [solution (find-solution (generate-programs size operators)
+                                (icfp-oracle id))]
+    (println (str "RESULT: " solution))
+    solution))
 
 (defn solvable?
   [problem]
@@ -133,13 +134,11 @@
   (filter #(= (:size %) n) problems))
 
 (defn win! []
-  (sh "/usr/bin/say" "-v" "Good News" "win"))
+  (sh "espeak" "win"))
 
-(defn do-size-n-problems [problems n]
-  (doseq [problem (size-n-problems problems 6)]
-    (println (str "WORKING ON: " problem))
+(defn do-problems [problems]
+  (doseq [problem problems]
     (when-let [res (do-problem problem)]
-      (println (str "RESULT: " res))
       (win!))))
 
   (comment
@@ -153,6 +152,23 @@
                             (or (in-ops 'fold)
                                 (in-ops 'tfold)))))) ;; we don't handle fold/tfold yet
            (filter solvable?)))
+
+    (def only-unary-operators-problems
+      (filter
+       (fn [p]
+         (set/subset? (set (:operators p)) (set '[not shl1 shr1 shr4 shr16])))
+       problems))
+
+    (defn n-operator-problems
+      [n]
+      (filter (fn [p] (= (count (:operators p)) n)) problems))
+
+    (def two-operator-problems (n-operator-problems 2))
+
+    (def single-unary-operator-problems
+      (filter (fn [p]
+                (== (count (:operators p)) 1))
+              problems))
 
     (def size-3-problems
       (filter #(= (:size %) 3) problems))
