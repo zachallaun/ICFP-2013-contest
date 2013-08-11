@@ -28,7 +28,7 @@
   (conde
    [(emptyo ls)] ;; just succeed if ls is empty
    [(fresh [a d]
-      (conso a d ls) ;; unify (a d) with ls  
+      (conso a d ls) ;; unify (a d) with ls
       (!= a elem)
       (not-membero elem d))]))
 
