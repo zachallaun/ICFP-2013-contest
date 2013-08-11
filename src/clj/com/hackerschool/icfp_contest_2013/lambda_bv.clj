@@ -134,9 +134,11 @@
     (bitvector-shl1o tmp2 tmp3)
     (bitvector-shl1o tmp3 out)))
 
+;; turn [b1 b2 b3 b4 ... bn] into [0 b1 b2 b3 b4 ... bn-1]
 (defn bitvector-shr1o [bv out]
   (fresh [fstbv lastbit]
-    (appendo fstbv lastbit bv)
+    (appendo fstbv [lastbit] bv)
+    (bito lastbit)
     (conso 0 fstbv out)))
 
 
@@ -159,7 +161,9 @@
 
   (run 1 [q] (bitvector-shl4o [1 1 1 1 1] q))
 
-  (run 1 [q] (bitvector-shr4o [1 1 1 1 1 1 1 1] q))
+  (run 1 [q] (bitvector-shr1o [1 1 1] q))
+
+  (run 1 [q] (bitvector-shr4o [1 1 1 1 1] q))
 
 )
 
