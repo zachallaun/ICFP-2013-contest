@@ -1,11 +1,42 @@
 (ns com.hackerschool.icfp-contest-2013.t-lambda-bv
   (:require [midje.sweet :refer :all]
-            [com.hackerschool.icfp-contest-2013.lambda-bv :refer :all]))
+            [com.hackerschool.icfp-contest-2013.lambda-bv :refer :all]
+            [clojure.core.logic :refer [run run* membero appendo conso fresh]])
+  (:import [clojure.core.logic Pair]))
 
 (fact "fold"
   (fold 0 1 (fn [acc x] (bit-shift-left acc 1))) => 256
   (fold 0x1122334455667788 [] (fn [acc x] (conj acc x)))
     => [0x88 0x77 0x66 0x55 0x44 0x33 0x22 0x11])
+
+(facts "about relational bitwise and bitvector operations"
+  (run 1 [q] (bito 1)) => '(_0)
+
+  (run 1 [q] (bit-noto 0 q)) => '(1)
+
+  (run 2 [q] (bit-noto q 0)) => '(1)
+  
+  ;; a cute proof
+
+  ;; (run* [q]
+  ;;   (fresh [u v]
+  ;;     (bit-noto u v)
+  ;;     (== [u v] q))) => '([1 0] [0 1])
+
+  ;; (run* [q] (fresh [u v] (bit-ando u v) (==  [u v] q))) => '([1 1])
+
+  ;; (run* [q] (fresh [u v] (bit-oro u v) (== [u v] q))) => '([1 _0] [_0 1])
+
+  ;; (run* [q] (fresh [u v] (bit-xoro u v) (== [u v] q))) => '([1 0] [0 1])
+
+  (run 1 [q] (bitvector-shl1o [1 1 1] q)) => '((1 1 0))
+
+  (run 1 [q] (bitvector-shr4o [1 1 1 1 1] q)) => '((0 0 0 0 1))
+
+  (run 1 [q] (bitvector-shr16o [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1] q)) =>
+  '((0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1))
+
+)
 
 (facts "about running λBV code"
 

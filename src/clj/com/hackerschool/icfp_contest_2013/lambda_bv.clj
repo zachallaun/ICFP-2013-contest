@@ -31,7 +31,6 @@
   (let [bytes (reverse (long->bytes n))]
     (reduce f init bytes)))
 
-;; fixme: rename me.
 (defn run-program
   "Runs a λBV program, given a long argument, and returns a long."
   [e arg]
@@ -79,32 +78,47 @@
       [(['lambda ([id] :seq) body] :seq)]
       (run-body body {id arg}))))
 
+;; ===============================================
 
-;; Something like this?
+;; Bitwise operations.
+
+(defn bito
+  "Relational predicate that succeeds if b is a bit."
+  [b]
+  (conde
+   [(== b 1)]
+   [(== b 0)]))
+
 (defn bit-noto [b out]
   (conde
    [(== b 1) (== 0 out)]
    [(== b 0) (== 1 out)]))
 
-;; predicate that succeeds if b is a bit
-(defn bito [b]
+(defn bit-ando
+  "Relational predicate that succeeds if b1 and b2 are both 1."
+  [b1 b2]
+  (fresh []
+    (== b1 1)
+    (== b2 1)))
+
+(defn bit-oro
+  "Relational predicate that succeeds if at least one of b1 and b2 is 1."
+  [b1 b2]
   (conde
-   [(== b 1)]
-   [(== b 0)]))
+   [(== b1 1)]
+   [(== b2 1)]))
 
-(comment
-  (run 1 [q]
-       (bit-noto 0 q))
+(defn bit-xoro
+  "Relational predicate that succeeds if exactly one of b1 and b2 is 1."
+  [b1 b2]
+  (conde
+   [(== b1 1) (== b2 0)]
+   [(== b2 1) (== b1 0)]))
 
-  (run 2 [q]
-       (bit-noto q 0))
+;; Bitvector operations.
 
-  (run* [q]
-    (fresh [u v]
-      (bit-noto u v)
-      (conso u v q)))
-  )
-
+;; These operations all assume that their input is a bitvector (vector
+;; of {0, 1}) and that the result is a bitvector of the same length.
 
 (defn bitvector-noto [bv out]
   (conde
@@ -116,49 +130,45 @@
         (conso flipb res out)
         (bitvector-noto rst res)))]))
 
-;; todo: "shl1" | "shr1" | "shr4" | "shr16"
-;; todo: "and" | "or" | "xor" | "plus"
-
-;; assumes that input is a vector.
-;; TODO: test me
 (defn bitvector-shl1o [bv out]
+  "Turn [b1 b2 b3 b4 ... bn] into [b2 b3 b4 ... bn-1 0]."
   (fresh [fstbit rstbits]
+    (bito fstbit)
     (conso fstbit rstbits bv)
     (appendo rstbits [0] out)))
 
-;; turn [b1 b2 b3 b4 ... bn] into [0 b1 b2 b3 b4 ... bn-1]
-(defn bitvector-shr1o [bv out]
+(defn bitvector-shr1o
+  "Turn [b1 b2 b3 b4 ... bn] into [0 b1 b2 b3 b4 ... bn-1]."
+  [bv out]
   (fresh [fstbv lastbit]
-    (appendo fstbv [lastbit] bv)
     (bito lastbit)
+    (appendo fstbv [lastbit] bv)
     (conso 0 fstbv out)))
 
-;; turn [b1 b2 b3 b4 ... bn] into [0 0 0 0 b1 b2 b3 b4 ... bn-3]
-(defn bitvector-shr4o [bv out]
+(defn bitvector-shr4o
+  "Turn [b1 b2 b3 b4 ... bn] into [0 0 0 0 b1 b2 b3 b4 ... bn-3]."
+  [bv out]
   (fresh [tmp1 tmp2 tmp3]
     (bitvector-shr1o bv tmp1)
     (bitvector-shr1o tmp1 tmp2)
     (bitvector-shr1o tmp2 tmp3)
     (bitvector-shr1o tmp3 out)))
 
-;; proof of concept.  you could also write this recursively, maybe?
-(defn bitvector-shr16o [bv out]
+(defn bitvector-shr16o
+  "Turn [b1 b2 b3 b4 ... bn] into [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 b1
+  b2 b3 b4 ... bn-15]."
+  [bv out]
   (fresh [tmp1 tmp2 tmp3]
     (bitvector-shr4o bv tmp1)
     (bitvector-shr4o tmp1 tmp2)
     (bitvector-shr4o tmp2 tmp3)
     (bitvector-shr4o tmp3 out)))
 
+;; todo: "and" | "or" | "xor" | "plus"
+
 (comment
-  (run 1 [q] (bito 1))
 
-  (run 1 [q] (bitvector-shl1o [1 1 1] q))
 
-  (run 1 [q] (bitvector-shr4o [1 1 1 1 1] q))
-
-  (run 1 [q] (bitvector-shr4o [1 1 1] q))
-
-  (run 1 [q] (bitvector-shr16o [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1] q))
 
 )
 
