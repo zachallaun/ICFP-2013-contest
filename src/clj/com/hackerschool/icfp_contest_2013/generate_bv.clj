@@ -100,7 +100,7 @@
   {'not 2 'shl1 2 'shr1 2 'shr4 2 'shr16 2
    'plus 3 'and 3 'or 3 'xor 3
    'if0 4
-   'fold 5})
+   'fold 5 'tfold 5})
 
 (defn affordable-ops
   "Returns a subset of `ops` that could be used in expressions <= progsize"
@@ -128,39 +128,42 @@
     (for [e0 (generate-exprs (dec progsize) ops)
           e1 (generate-exprs (- progsize 1 (size e0)) ops)
           e2 (generate-exprs (- progsize 1 (size e1)) ops)]
-      [op e0 e1 e2])))
+      [op e0 e1 e2])
+
+    ;; (fold e0 e1 (lambda (y z) e2))
+
+    (fold)
+    (for [e0 (generate-exprs (- progsize 2) ops)
+          e1 (generate-exprs (- progsize 2 (size e0)) ops)
+          e2 (generate-exprs (- progsize 2 (size e1)) ops '[y z])]
+      ['fold e0 e1 ['lambda '[y z] e2]])
+
+    (tfold)
+    (let [ops (disj (set ops) 'tfold)]
+     (for [e0 (generate-exprs (- progsize 2) ops)
+           e1 (generate-exprs (- progsize 2 (size e0)) ops)
+           e2 (generate-exprs (- progsize 2 (size e1)) ops '[y z])]
+       ['fold e0 e1 ['lambda '[y z] e2]]))))
 
 (defn generate-exprs
   "Generate all expressions with a certain size and op set."
-  [progsize ops]
-  (let [ops (shuffle ops)]
-    (if (<= progsize 1)
-      '[0 1 x]
-      (let [exprs (mapcat #(generate-exprs-with % progsize ops)
-                          (affordable-ops ops progsize))]
-        (concat (generate-exprs (dec progsize) ops) exprs)))))
+  ([progsize ops]
+     (generate-exprs progsize ops []))
+  ([progsize ops extra-ids]
+     (let [ops (shuffle ops)]
+       (if (<= progsize 1)
+         (concat '[0 1 x] extra-ids)
+         (let [exprs (mapcat #(generate-exprs-with % progsize ops)
+                             (affordable-ops ops progsize))]
+           (concat (generate-exprs (dec progsize) ops) exprs))))))
 
 (defn generate-programs
   "Generate all programs with a certain op set and less than size `progsize`"
   [progsize ops]
   (->> (generate-exprs (dec progsize) ops)
-       (map (fn [expr] ['lambda ['x] expr])) ;; make a program
+       (map (fn [e] ['lambda ['x] e])) ;; make a program
        (map constant-fold)
-       (map eliminate-dead-code)
-       distinct))
-
-(comment
-  generate all programs with opset
-  test against input/output pairs
-  submit first program that passes
-
-  (generate-programs 1 '[plus])
-
-  (def problem (first (drop 100 (generate-programs 5 '[and or plus if0]))))
-  problem
-  [problem (eliminate-dead-code problem)]
-  )
-
+       (map eliminate-dead-code)))
 
 (defn rand-longs []
   ;;TODO properly sample from full space of 64 bit vectors
@@ -188,7 +191,7 @@
         (let [result (oracle :submit attempt)]
           (match [result]
             [[:win]] attempt
-            [[:mismatch in out]] (recur {in out}
+            [[:mismatch in out]] (recur (assoc examples in out)
                                         (rest culled))
             [[:error msg]] (do (println (str "ERROR: " msg))
                                (recur (oracle :examples) culled))))))))

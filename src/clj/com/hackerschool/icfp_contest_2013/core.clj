@@ -162,7 +162,7 @@
     (->> (:body (myproblems-req))
          (map (fn [problem]
                 (update-in problem [:operators] #(map symbol %))))
-         (filter (fn [{:keys [operators]}]
+         #_(filter (fn [{:keys [operators]}]
                    (not (let [in-ops (set operators)]
                           (or (in-ops 'fold)
                               (in-ops 'tfold)))))) ;; we don't handle fold/tfold yet
