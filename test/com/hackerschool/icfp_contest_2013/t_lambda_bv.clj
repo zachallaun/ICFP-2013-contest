@@ -1,8 +1,9 @@
 (ns com.hackerschool.icfp-contest-2013.t-lambda-bv
   (:require [midje.sweet :refer :all]
             [com.hackerschool.icfp-contest-2013.lambda-bv :refer :all]
-            [clojure.core.logic :refer [run run* membero appendo conso fresh]])
-  (:import [clojure.core.logic Pair]))
+            [clojure.core.logic :refer [run run* membero appendo conso fresh ==]])
+  (:import [clojure.core.logic Pair])
+  (:refer-clojure :exclude [==]))
 
 (fact "fold"
   (fold 0 1 (fn [acc x] (bit-shift-left acc 1))) => 256
@@ -18,16 +19,16 @@
   
   ;; a cute proof
 
-  ;; (run* [q]
-  ;;   (fresh [u v]
-  ;;     (bit-noto u v)
-  ;;     (== [u v] q))) => '([1 0] [0 1])
+  (run* [q]
+    (fresh [u v]
+      (bit-noto u v)
+      (== [u v] q))) => '([1 0] [0 1])
 
-  ;; (run* [q] (fresh [u v] (bit-ando u v) (==  [u v] q))) => '([1 1])
+  (run* [q] (fresh [u v] (bit-ando u v) (==  [u v] q))) => '([1 1])
 
-  ;; (run* [q] (fresh [u v] (bit-oro u v) (== [u v] q))) => '([1 _0] [_0 1])
+  (run* [q] (fresh [u v] (bit-oro u v) (== [u v] q))) => '([1 _0] [_0 1])
 
-  ;; (run* [q] (fresh [u v] (bit-xoro u v) (== [u v] q))) => '([1 0] [0 1])
+  (run* [q] (fresh [u v] (bit-xoro u v) (== [u v] q))) => '([1 0] [0 1])
 
   (run 1 [q] (bitvector-shl1o [1 1 1] q)) => '((1 1 0))
 
